@@ -10,6 +10,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
+    <!-- Agregando aria-live para mensajes de accesibilidad -->
+    <div aria-live="polite" aria-atomic="true" class="sr-only" id="loginMessages"></div>
+    
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
@@ -24,7 +27,7 @@
                 <form id="credentialsForm" class="login-form">
                     <div class="form-group">
                         <label for="userType">Iniciar sesión como</label>
-                        <select id="userType" required>
+                        <select id="userType" required aria-describedby="userTypeHelp">
                             <option value="">Selecciona tu perfil</option>
                             <option value="patient">
                                 👤 Paciente
@@ -39,21 +42,24 @@
                                 🏢 EPS/Entidad
                             </option>
                         </select>
+                        <div id="userTypeHelp" class="sr-only">Selecciona el tipo de usuario para acceder al sistema</div>
                     </div>
 
                     <div class="form-group">
                         <label for="username">Usuario</label>
-                        <input type="text" id="username" placeholder="Número de documento o usuario" required>
+                        <input type="text" id="username" placeholder="Número de documento o usuario" required aria-describedby="usernameHelp">
+                        <div id="usernameHelp" class="sr-only">Ingresa tu número de documento o nombre de usuario</div>
                     </div>
 
                     <div class="form-group">
                         <label for="password">Contraseña</label>
                         <div class="password-input">
-                            <input type="password" id="password" placeholder="Ingresa tu contraseña" required>
-                            <button type="button" class="password-toggle" onclick="togglePassword()">
+                            <input type="password" id="password" placeholder="Ingresa tu contraseña" required aria-describedby="passwordHelp">
+                            <button type="button" class="password-toggle" onclick="togglePassword()" aria-label="Mostrar u ocultar contraseña">
                                 <i class="fas fa-eye" id="passwordIcon"></i>
                             </button>
                         </div>
+                        <div id="passwordHelp" class="sr-only">Ingresa tu contraseña. Usa el botón para mostrar u ocultar la contraseña</div>
                     </div>
 
                     <button type="submit" class="btn btn-primary" id="loginBtn" disabled>
@@ -77,39 +83,114 @@
                 </div>
             </div>
 
-            <!-- 2FA Form -->
+            <!-- Mejorando la interfaz 2FA eliminando header duplicado y mejorando UX -->
             <div class="login-content hidden" id="twoFactorForm">
-                <div class="login-header">
-                    <div class="logo-container small">
-                        <i class="fas fa-shield-alt"></i>
+                <div class="two-factor-header">
+                    <div class="step-indicator">
+                        <div class="step-progress">
+                            <div class="step completed">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="step-line"></div>
+                            <div class="step active">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                        </div>
+                        <div class="step-labels">
+                            <span class="step-label completed">Credenciales</span>
+                            <span class="step-label active">Verificación</span>
+                        </div>
                     </div>
-                    <h2>Verificación en Dos Pasos</h2>
-                    <p>Ingresa el código de verificación para completar el acceso</p>
+                    
+                    <h2>Verificación de Seguridad</h2>
+                    <p class="verification-description">
+                        Para proteger tu cuenta, necesitamos verificar tu identidad. 
+                        <strong>Selecciona un método</strong> y sigue las instrucciones.
+                    </p>
                 </div>
 
                 <form id="verificationForm" class="login-form">
                     <div class="form-group">
-                        <label for="verificationMethod">Método de verificación</label>
-                        <select id="verificationMethod">
-                            <option value="">Selecciona método</option>
-                            <option value="sms">📱 SMS al +57 *** *** **45</option>
-                            <option value="email">📧 Email a j***@***.com</option>
-                            <option value="app">🔑 App Autenticadora</option>
-                        </select>
+                        <label for="verificationMethod">¿Cómo prefieres recibir el código?</label>
+                        <div class="verification-methods">
+                            <label class="method-option">
+                                <input type="radio" name="verificationMethod" value="sms" required>
+                                <div class="method-card">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    <div class="method-info">
+                                        <strong>Mensaje de texto</strong>
+                                        <span>Enviar al +57 *** *** **45</span>
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <label class="method-option">
+                                <input type="radio" name="verificationMethod" value="email" required>
+                                <div class="method-card">
+                                    <i class="fas fa-envelope"></i>
+                                    <div class="method-info">
+                                        <strong>Correo electrónico</strong>
+                                        <span>Enviar a j***@***.com</span>
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <label class="method-option">
+                                <input type="radio" name="verificationMethod" value="app" required>
+                                <div class="method-card">
+                                    <i class="fas fa-qrcode"></i>
+                                    <div class="method-info">
+                                        <strong>App Autenticadora</strong>
+                                        <span>Google Authenticator o similar</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" id="codeInputGroup" style="display: none;">
                         <label for="verificationCode">Código de verificación</label>
-                        <input type="text" id="verificationCode" placeholder="Ingresa el código de 6 dígitos" maxlength="6" class="verification-input">
+                        <input type="text" id="verificationCode" placeholder="000000" maxlength="6" class="verification-input" aria-describedby="codeHelp">
+                        <div id="codeHelp" class="form-help">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Ingresa el código de 6 dígitos que recibiste</span>
+                        </div>
+                        <div class="code-timer" id="codeTimer" style="display: none;">
+                            <i class="fas fa-clock"></i>
+                            <span>El código expira en <strong id="timerDisplay">05:00</strong></span>
+                        </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">
-                        Verificar y Acceder
-                    </button>
-                    
-                    <button type="button" class="btn btn-secondary" onclick="showLoginForm()">
-                        Volver al login
-                    </button>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="verifyBtn" disabled>
+                            <i class="fas fa-shield-check"></i>
+                            Verificar y Acceder
+                        </button>
+                        
+                        <button type="button" class="btn btn-secondary" onclick="showLoginForm()">
+                            <i class="fas fa-arrow-left"></i>
+                            Volver al inicio
+                        </button>
+                    </div>
+
+                    <div class="verification-help">
+                        <details>
+                            <summary>¿No recibiste el código?</summary>
+                            <div class="help-content">
+                                <p>Si no recibiste el código de verificación:</p>
+                                <ul>
+                                    <li>Verifica tu bandeja de spam o correo no deseado</li>
+                                    <li>Asegúrate de que tu teléfono tenga señal</li>
+                                    <li>Espera hasta 2 minutos para la entrega</li>
+                                    <li>Puedes solicitar un nuevo código después de 5 minutos</li>
+                                </ul>
+                                <button type="button" class="btn btn-outline btn-sm" id="resendCodeBtn" disabled>
+                                    <i class="fas fa-redo"></i>
+                                    Reenviar código
+                                </button>
+                            </div>
+                        </details>
+                    </div>
                 </form>
             </div>
         </div>

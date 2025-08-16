@@ -10,12 +10,24 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
+    <!-- Agregando regiones aria-live para accesibilidad -->
+    <div aria-live="polite" aria-atomic="true" class="sr-only" id="patientMessages"></div>
+    <div aria-live="assertive" aria-atomic="true" class="sr-only" id="urgentPatientMessages"></div>
+    
     <div class="dashboard-container">
+        <!-- Agregando botón hamburguesa para móvil -->
+        <div class="mobile-header show-mobile">
+            <button class="sidebar-toggle-btn" aria-label="Abrir menú de navegación" aria-expanded="false" aria-controls="sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="mobile-header-title">Mi Panel de Salud</div>
+        </div>
+
         <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menú principal">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
-                    <i class="fas fa-stethoscope"></i>
+                    <i class="fas fa-stethoscope" aria-hidden="true"></i>
                 </div>
                 <div>
                     <div class="sidebar-title">Sistema Médico</div>
@@ -24,34 +36,34 @@
             </div>
 
             <nav>
-                <ul class="sidebar-nav">
-                    <li class="nav-item">
-                        <a href="#" class="nav-link active">
-                            <i class="fas fa-home"></i>
+                <ul class="sidebar-nav" role="menubar">
+                    <li class="nav-item" role="none">
+                        <a href="#" class="nav-link active" role="menuitem" aria-current="page">
+                            <i class="fas fa-home" aria-hidden="true"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a href="history.html" class="nav-link">
-                            <i class="fas fa-file-medical"></i>
+                    <li class="nav-item" role="none">
+                        <a href="history.html" class="nav-link" role="menuitem">
+                            <i class="fas fa-file-medical" aria-hidden="true"></i>
                             <span>Mi Historia Clínica</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a href="appointments.html" class="nav-link">
-                            <i class="fas fa-calendar-alt"></i>
+                    <li class="nav-item" role="none">
+                        <a href="appointments.html" class="nav-link" role="menuitem">
+                            <i class="fas fa-calendar-alt" aria-hidden="true"></i>
                             <span>Mis Citas</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a href="results.html" class="nav-link">
-                            <i class="fas fa-chart-line"></i>
+                    <li class="nav-item" role="none">
+                        <a href="results.html" class="nav-link" role="menuitem">
+                            <i class="fas fa-chart-line" aria-hidden="true"></i>
                             <span>Resultados</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="fas fa-pills"></i>
+                    <li class="nav-item" role="none">
+                        <a href="#" class="nav-link" role="menuitem">
+                            <i class="fas fa-pills" aria-hidden="true"></i>
                             <span>Medicamentos</span>
                         </a>
                     </li>
@@ -59,9 +71,9 @@
             </nav>
 
             <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border-color);">
-                <div class="nav-link">
+                <div class="nav-link" role="region" aria-label="Información del usuario">
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <div style="width: 32px; height: 32px; background: var(--bg-tertiary); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <div style="width: 32px; height: 32px; background: var(--bg-tertiary); border-radius: 50%; display: flex; align-items: center; justify-content: center;" aria-hidden="true">
                             <i class="fas fa-user"></i>
                         </div>
                         <div>
@@ -70,134 +82,137 @@
                         </div>
                     </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);">
-                    <div class="status-dot green"></div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);" role="status" aria-label="Estado del sistema">
+                    <div class="status-dot green" aria-hidden="true"></div>
                     <span>Sistema Operativo</span>
                 </div>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="main-content">
+        <main class="main-content" role="main">
             <div class="page-header">
                 <div>
                     <h1 class="page-title">Mi Panel de Salud</h1>
                     <p class="page-subtitle">Bienvenido, Juan Pérez - CC: 12345678</p>
                 </div>
                 <div class="header-actions">
-                    <span class="badge badge-success">
-                        <div class="status-dot green"></div>
+                    <span class="badge badge-success" role="status" aria-label="Estado: Activo">
+                        <div class="status-dot green" aria-hidden="true"></div>
                         Activo
                     </span>
                 </div>
             </div>
 
             <!-- Quick Stats -->
-            <div class="card-grid">
-                <div class="card">
-                    <div class="card-content">
-                        <div class="stat-card">
-                            <div class="stat-icon blue">
-                                <i class="fas fa-calendar-alt"></i>
-                            </div>
-                            <div class="stat-content">
-                                <h3>Próximas Citas</h3>
-                                <p>2</p>
+            <section aria-labelledby="patient-stats-heading">
+                <h2 id="patient-stats-heading" class="sr-only">Resumen de mi salud</h2>
+                <div class="card-grid">
+                    <div class="card" role="region" aria-labelledby="upcoming-appointments">
+                        <div class="card-content">
+                            <div class="stat-card">
+                                <div class="stat-icon blue" aria-hidden="true">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="upcoming-appointments">Próximas Citas</h3>
+                                    <p aria-describedby="upcoming-appointments">2</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="card">
-                    <div class="card-content">
-                        <div class="stat-card">
-                            <div class="stat-icon green">
-                                <i class="fas fa-file-medical-alt"></i>
-                            </div>
-                            <div class="stat-content">
-                                <h3>Resultados Nuevos</h3>
-                                <p>3</p>
+                    <div class="card" role="region" aria-labelledby="new-results">
+                        <div class="card-content">
+                            <div class="stat-card">
+                                <div class="stat-icon green" aria-hidden="true">
+                                    <i class="fas fa-file-medical-alt"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="new-results">Resultados Nuevos</h3>
+                                    <p aria-describedby="new-results" aria-live="polite">3</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="card">
-                    <div class="card-content">
-                        <div class="stat-card">
-                            <div class="stat-icon purple">
-                                <i class="fas fa-chart-line"></i>
-                            </div>
-                            <div class="stat-content">
-                                <h3>Consultas Este Mes</h3>
-                                <p>4</p>
+                    <div class="card" role="region" aria-labelledby="monthly-consultations">
+                        <div class="card-content">
+                            <div class="stat-card">
+                                <div class="stat-icon purple" aria-hidden="true">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="monthly-consultations">Consultas Este Mes</h3>
+                                    <p aria-describedby="monthly-consultations">4</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="card">
-                    <div class="card-content">
-                        <div class="stat-card">
-                            <div class="stat-icon orange">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div class="stat-content">
-                                <h3>Días Última Consulta</h3>
-                                <p>5</p>
+                    <div class="card" role="region" aria-labelledby="last-consultation">
+                        <div class="card-content">
+                            <div class="stat-card">
+                                <div class="stat-icon orange" aria-hidden="true">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="last-consultation">Días Última Consulta</h3>
+                                    <p aria-describedby="last-consultation">5</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
                 <!-- Upcoming Appointments -->
-                <div class="card">
+                <section class="card" role="region" aria-labelledby="appointments-heading">
                     <div class="card-header">
-                        <h2 class="card-title">
-                            <i class="fas fa-calendar-alt"></i>
+                        <h2 class="card-title" id="appointments-heading">
+                            <i class="fas fa-calendar-alt" aria-hidden="true"></i>
                             Próximas Citas
                         </h2>
                         <p class="card-description">Tus citas médicas programadas</p>
                     </div>
                     <div class="card-content">
-                        <div class="item-list">
-                            <div class="list-item">
+                        <div class="item-list" role="list" aria-label="Lista de próximas citas">
+                            <div class="list-item" role="listitem">
                                 <div class="item-info">
                                     <div class="item-title">Dr. María González</div>
                                     <div class="item-subtitle">Cardiología</div>
                                     <div class="item-meta">2024-01-15 - 10:00 AM</div>
                                 </div>
-                                <span class="badge badge-success">confirmada</span>
+                                <span class="badge badge-success" role="status" aria-label="Estado: confirmada">confirmada</span>
                             </div>
-                            <div class="list-item">
+                            <div class="list-item" role="listitem">
                                 <div class="item-info">
                                     <div class="item-title">Dr. Carlos Ruiz</div>
                                     <div class="item-subtitle">Medicina General</div>
                                     <div class="item-meta">2024-01-20 - 2:30 PM</div>
                                 </div>
-                                <span class="badge badge-secondary">pendiente</span>
+                                <span class="badge badge-secondary" role="status" aria-label="Estado: pendiente">pendiente</span>
                             </div>
                         </div>
-                        <button class="btn btn-outline" style="width: 100%; margin-top: 1rem;">
+                        <button class="btn btn-outline" style="width: 100%; margin-top: 1rem;" aria-describedby="appointments-heading">
                             Ver Todas las Citas
                         </button>
                     </div>
-                </div>
+                </section>
 
                 <!-- Recent Results -->
-                <div class="card">
+                <section class="card" role="region" aria-labelledby="results-heading">
                     <div class="card-header">
-                        <h2 class="card-title">
-                            <i class="fas fa-file-medical-alt"></i>
+                        <h2 class="card-title" id="results-heading">
+                            <i class="fas fa-file-medical-alt" aria-hidden="true"></i>
                             Resultados Recientes
                         </h2>
                         <p class="card-description">Tus últimos exámenes y estudios</p>
                     </div>
                     <div class="card-content">
-                        <div class="item-list">
-                            <div class="list-item">
+                        <div class="item-list" role="list" aria-label="Lista de resultados recientes" aria-live="polite">
+                            <div class="list-item" role="listitem">
                                 <div style="display: flex; align-items: center; gap: 0.75rem;">
                                     <div class="item-info">
                                         <div class="item-title">Hemograma Completo</div>
@@ -205,38 +220,38 @@
                                     </div>
                                 </div>
                                 <div class="item-actions">
-                                    <span class="badge badge-success">disponible</span>
-                                    <button class="btn btn-sm"><i class="fas fa-eye"></i></button>
-                                    <button class="btn btn-sm"><i class="fas fa-download"></i></button>
+                                    <span class="badge badge-success" role="status" aria-label="Estado: disponible">disponible</span>
+                                    <button class="btn btn-sm" aria-label="Ver hemograma completo"><i class="fas fa-eye" aria-hidden="true"></i></button>
+                                    <button class="btn btn-sm" aria-label="Descargar hemograma completo"><i class="fas fa-download" aria-hidden="true"></i></button>
                                 </div>
                             </div>
-                            <div class="list-item">
+                            <div class="list-item" role="listitem">
                                 <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                    <i class="fas fa-exclamation-triangle" style="color: var(--error-color);"></i>
+                                    <i class="fas fa-exclamation-triangle" style="color: var(--error-color);" aria-label="Requiere atención"></i>
                                     <div class="item-info">
                                         <div class="item-title">Electrocardiograma</div>
                                         <div class="item-meta">2024-01-08</div>
                                     </div>
                                 </div>
                                 <div class="item-actions">
-                                    <span class="badge badge-success">disponible</span>
-                                    <button class="btn btn-sm"><i class="fas fa-eye"></i></button>
-                                    <button class="btn btn-sm"><i class="fas fa-download"></i></button>
+                                    <span class="badge badge-success" role="status" aria-label="Estado: disponible">disponible</span>
+                                    <button class="btn btn-sm" aria-label="Ver electrocardiograma"><i class="fas fa-eye" aria-hidden="true"></i></button>
+                                    <button class="btn btn-sm" aria-label="Descargar electrocardiograma"><i class="fas fa-download" aria-hidden="true"></i></button>
                                 </div>
                             </div>
-                            <div class="list-item">
+                            <div class="list-item" role="listitem">
                                 <div class="item-info">
                                     <div class="item-title">Radiografía de Tórax</div>
                                     <div class="item-meta">2024-01-05</div>
                                 </div>
-                                <span class="badge badge-warning">procesando</span>
+                                <span class="badge badge-warning" role="status" aria-label="Estado: procesando">procesando</span>
                             </div>
                         </div>
-                        <button class="btn btn-outline" style="width: 100%; margin-top: 1rem;">
+                        <button class="btn btn-outline" style="width: 100%; margin-top: 1rem;" aria-describedby="results-heading">
                             Ver Todos los Resultados
                         </button>
                     </div>
-                </div>
+                </section>
             </div>
 
             <!-- Medical History Timeline -->
@@ -306,46 +321,47 @@
             </div>
 
             <!-- Health Progress -->
-            <div class="card" style="margin-top: 1.5rem;">
+            <section class="card" style="margin-top: 1.5rem;" role="region" aria-labelledby="progress-heading">
                 <div class="card-header">
-                    <h2 class="card-title">Seguimiento de Salud</h2>
+                    <h2 class="card-title" id="progress-heading">Seguimiento de Salud</h2>
                     <p class="card-description">Progreso de tus indicadores de salud</p>
                 </div>
                 <div class="card-content">
-                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="display: flex; flex-direction: column; gap: 1rem;" role="group" aria-labelledby="progress-heading">
                         <div>
                             <div style="display: flex; justify-content: space-between; font-size: var(--font-size-sm); margin-bottom: 0.5rem;">
                                 <span>Adherencia a Medicamentos</span>
-                                <span>85%</span>
+                                <span aria-label="85 por ciento">85%</span>
                             </div>
-                            <div class="progress-bar">
+                            <div class="progress-bar" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100" aria-label="Adherencia a medicamentos: 85%">
                                 <div class="progress-fill" style="width: 85%;"></div>
                             </div>
                         </div>
                         <div>
                             <div style="display: flex; justify-content: space-between; font-size: var(--font-size-sm); margin-bottom: 0.5rem;">
                                 <span>Asistencia a Citas</span>
-                                <span>92%</span>
+                                <span aria-label="92 por ciento">92%</span>
                             </div>
-                            <div class="progress-bar">
+                            <div class="progress-bar" role="progressbar" aria-valuenow="92" aria-valuemin="0" aria-valuemax="100" aria-label="Asistencia a citas: 92%">
                                 <div class="progress-fill" style="width: 92%;"></div>
                             </div>
                         </div>
                         <div>
                             <div style="display: flex; justify-content: space-between; font-size: var(--font-size-sm); margin-bottom: 0.5rem;">
                                 <span>Seguimiento de Tratamiento</span>
-                                <span>78%</span>
+                                <span aria-label="78 por ciento">78%</span>
                             </div>
-                            <div class="progress-bar">
+                            <div class="progress-bar" role="progressbar" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100" aria-label="Seguimiento de tratamiento: 78%">
                                 <div class="progress-fill" style="width: 78%;"></div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
         </main>
     </div>
 
+    <script src="../../js/responsive.js"></script>
     <script src="../../js/main.js"></script>
     <script src="../../js/dashboard.js"></script>
 </body>
