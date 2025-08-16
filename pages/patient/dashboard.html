@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Paciente - Sistema Médico</title>
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/responsive.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <div>
+                    <div class="sidebar-title">Sistema Médico</div>
+                    <div class="sidebar-subtitle">Integral</div>
+                </div>
+            </div>
+
+            <nav>
+                <ul class="sidebar-nav">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="history.html" class="nav-link">
+                            <i class="fas fa-file-medical"></i>
+                            <span>Mi Historia Clínica</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="appointments.html" class="nav-link">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Mis Citas</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="results.html" class="nav-link">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Resultados</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-pills"></i>
+                            <span>Medicamentos</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                <div class="nav-link">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div style="width: 32px; height: 32px; background: var(--bg-tertiary); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 500; font-size: 0.875rem;">Juan Pérez</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">CC: 12345678</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);">
+                    <div class="status-dot green"></div>
+                    <span>Sistema Operativo</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Mi Panel de Salud</h1>
+                    <p class="page-subtitle">Bienvenido, Juan Pérez - CC: 12345678</p>
+                </div>
+                <div class="header-actions">
+                    <span class="badge badge-success">
+                        <div class="status-dot green"></div>
+                        Activo
+                    </span>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Próximas Citas</h3>
+                                <p>2</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-content">
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <i class="fas fa-file-medical-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Resultados Nuevos</h3>
+                                <p>3</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-content">
+                        <div class="stat-card">
+                            <div class="stat-icon purple">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Consultas Este Mes</h3>
+                                <p>4</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-content">
+                        <div class="stat-card">
+                            <div class="stat-icon orange">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Días Última Consulta</h3>
+                                <p>5</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                <!-- Upcoming Appointments -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-calendar-alt"></i>
+                            Próximas Citas
+                        </h2>
+                        <p class="card-description">Tus citas médicas programadas</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="item-list">
+                            <div class="list-item">
+                                <div class="item-info">
+                                    <div class="item-title">Dr. María González</div>
+                                    <div class="item-subtitle">Cardiología</div>
+                                    <div class="item-meta">2024-01-15 - 10:00 AM</div>
+                                </div>
+                                <span class="badge badge-success">confirmada</span>
+                            </div>
+                            <div class="list-item">
+                                <div class="item-info">
+                                    <div class="item-title">Dr. Carlos Ruiz</div>
+                                    <div class="item-subtitle">Medicina General</div>
+                                    <div class="item-meta">2024-01-20 - 2:30 PM</div>
+                                </div>
+                                <span class="badge badge-secondary">pendiente</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline" style="width: 100%; margin-top: 1rem;">
+                            Ver Todas las Citas
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Results -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-file-medical-alt"></i>
+                            Resultados Recientes
+                        </h2>
+                        <p class="card-description">Tus últimos exámenes y estudios</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="item-list">
+                            <div class="list-item">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div class="item-info">
+                                        <div class="item-title">Hemograma Completo</div>
+                                        <div class="item-meta">2024-01-10</div>
+                                    </div>
+                                </div>
+                                <div class="item-actions">
+                                    <span class="badge badge-success">disponible</span>
+                                    <button class="btn btn-sm"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-sm"><i class="fas fa-download"></i></button>
+                                </div>
+                            </div>
+                            <div class="list-item">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <i class="fas fa-exclamation-triangle" style="color: var(--error-color);"></i>
+                                    <div class="item-info">
+                                        <div class="item-title">Electrocardiograma</div>
+                                        <div class="item-meta">2024-01-08</div>
+                                    </div>
+                                </div>
+                                <div class="item-actions">
+                                    <span class="badge badge-success">disponible</span>
+                                    <button class="btn btn-sm"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-sm"><i class="fas fa-download"></i></button>
+                                </div>
+                            </div>
+                            <div class="list-item">
+                                <div class="item-info">
+                                    <div class="item-title">Radiografía de Tórax</div>
+                                    <div class="item-meta">2024-01-05</div>
+                                </div>
+                                <span class="badge badge-warning">procesando</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline" style="width: 100%; margin-top: 1rem;">
+                            Ver Todos los Resultados
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical History Timeline -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-chart-line"></i>
+                        Historial Médico Reciente
+                    </h2>
+                    <p class="card-description">Línea de tiempo de tus últimas atenciones médicas</p>
+                </div>
+                <div class="card-content">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <div>
+                                        <div class="timeline-title">Control Cardiológico</div>
+                                        <div class="timeline-subtitle">Dr. María González</div>
+                                    </div>
+                                    <div class="timeline-date">
+                                        <div>2024-01-10</div>
+                                        <span class="badge badge-info" style="margin-top: 0.25rem;">Consulta</span>
+                                    </div>
+                                </div>
+                                <p style="color: var(--text-secondary); font-size: var(--font-size-sm);">Control rutinario post-procedimiento. Paciente presenta evolución favorable.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <div>
+                                        <div class="timeline-title">Electrocardiograma</div>
+                                        <div class="timeline-subtitle">Dr. María González</div>
+                                    </div>
+                                    <div class="timeline-date">
+                                        <div>2024-01-08</div>
+                                        <span class="badge badge-success" style="margin-top: 0.25rem;">Examen</span>
+                                    </div>
+                                </div>
+                                <p style="color: var(--text-secondary); font-size: var(--font-size-sm);">ECG de control post-tratamiento</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <div>
+                                        <div class="timeline-title">Holter 24 horas</div>
+                                        <div class="timeline-subtitle">Dr. María González</div>
+                                    </div>
+                                    <div class="timeline-date">
+                                        <div>2024-01-03</div>
+                                        <span class="badge" style="background: #f3e8ff; color: #7c3aed; border-color: #e9d5ff; margin-top: 0.25rem;">Procedimiento</span>
+                                    </div>
+                                </div>
+                                <p style="color: var(--text-secondary); font-size: var(--font-size-sm);">Monitoreo cardíaco continuo por 24 horas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline" style="width: 100%; margin-top: 1rem;">
+                        Ver Historial Completo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Health Progress -->
+            <div class="card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <h2 class="card-title">Seguimiento de Salud</h2>
+                    <p class="card-description">Progreso de tus indicadores de salud</p>
+                </div>
+                <div class="card-content">
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: var(--font-size-sm); margin-bottom: 0.5rem;">
+                                <span>Adherencia a Medicamentos</span>
+                                <span>85%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 85%;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: var(--font-size-sm); margin-bottom: 0.5rem;">
+                                <span>Asistencia a Citas</span>
+                                <span>92%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 92%;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: var(--font-size-sm); margin-bottom: 0.5rem;">
+                                <span>Seguimiento de Tratamiento</span>
+                                <span>78%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 78%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../js/main.js"></script>
+    <script src="../../js/dashboard.js"></script>
+</body>
+</html>

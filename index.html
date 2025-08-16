@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Médico Integral - Login</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo-container">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h1>Sistema Médico Integral</h1>
+                <p>Accede a tu cuenta para gestionar información médica</p>
+            </div>
+
+            <div class="login-content" id="loginForm">
+                <form id="credentialsForm" class="login-form">
+                    <div class="form-group">
+                        <label for="userType">Iniciar sesión como</label>
+                        <select id="userType" required>
+                            <option value="">Selecciona tu perfil</option>
+                            <option value="patient">
+                                👤 Paciente
+                            </option>
+                            <option value="doctor">
+                                👨‍⚕️ Médico
+                            </option>
+                            <option value="admin">
+                                👨‍💼 Administrador
+                            </option>
+                            <option value="eps">
+                                🏢 EPS/Entidad
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="username">Usuario</label>
+                        <input type="text" id="username" placeholder="Número de documento o usuario" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Contraseña</label>
+                        <div class="password-input">
+                            <input type="password" id="password" placeholder="Ingresa tu contraseña" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword()">
+                                <i class="fas fa-eye" id="passwordIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="loginBtn" disabled>
+                        Iniciar Sesión
+                    </button>
+                </form>
+
+                <div class="login-links">
+                    <a href="#" class="link">¿Olvidaste tu contraseña?</a>
+                    <a href="#" class="link">Soporte Técnico</a>
+                </div>
+
+                <div class="security-notice">
+                    <div class="notice-content">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <div>
+                            <p class="notice-title">Aviso de Seguridad</p>
+                            <p>Este sistema maneja información médica confidencial. El acceso está registrado y monitoreado.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2FA Form -->
+            <div class="login-content hidden" id="twoFactorForm">
+                <div class="login-header">
+                    <div class="logo-container small">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h2>Verificación en Dos Pasos</h2>
+                    <p>Ingresa el código de verificación para completar el acceso</p>
+                </div>
+
+                <form id="verificationForm" class="login-form">
+                    <div class="form-group">
+                        <label for="verificationMethod">Método de verificación</label>
+                        <select id="verificationMethod">
+                            <option value="">Selecciona método</option>
+                            <option value="sms">📱 SMS al +57 *** *** **45</option>
+                            <option value="email">📧 Email a j***@***.com</option>
+                            <option value="app">🔑 App Autenticadora</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="verificationCode">Código de verificación</label>
+                        <input type="text" id="verificationCode" placeholder="Ingresa el código de 6 dígitos" maxlength="6" class="verification-input">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        Verificar y Acceder
+                    </button>
+                    
+                    <button type="button" class="btn btn-secondary" onclick="showLoginForm()">
+                        Volver al login
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/login.js"></script>
+</body>
+</html>

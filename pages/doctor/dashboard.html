@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Médico - Sistema Médico</title>
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/responsive.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <div>
+                    <div class="sidebar-title">Sistema Médico</div>
+                    <div class="sidebar-subtitle">Integral</div>
+                </div>
+            </div>
+
+            <nav>
+                <ul class="sidebar-nav">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="patients.html" class="nav-link">
+                            <i class="fas fa-users"></i>
+                            <span>Pacientes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="schedule.html" class="nav-link">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Agenda</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-file-medical"></i>
+                            <span>Historia Clínica</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-search"></i>
+                            <span>Estudios</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-stethoscope"></i>
+                            <span>Especialidades</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                <div class="nav-link">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div style="width: 32px; height: 32px; background: var(--bg-tertiary); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 500; font-size: 0.875rem;">Dr. María González</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">Reg: 12345</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);">
+                    <div class="status-dot green"></div>
+                    <span>En línea</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Panel Médico</h1>
+                    <p class="page-subtitle">Dr. María González - Cardiología</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-sm btn-outline" style="margin-right: 1rem;">
+                        <i class="fas fa-bell"></i>
+                        Notificaciones (3)
+                    </button>
+                    <span class="badge badge-success">
+                        <div class="status-dot green"></div>
+                        En línea
+                    </span>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Pacientes Hoy</h3>
+                                <p>12</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-content">
+                        <div class="stat-card">
+                            <div class="stat-icon red">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Alertas Clínicas</h3>
+                                <p>3</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-content">
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <i class="fas fa-file-medical-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Estudios Pendientes</h3>
+                                <p>8</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-content">
+                        <div class="stat-card">
+                            <div class="stat-icon orange">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Tiempo Promedio</h3>
+                                <p>25min</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                <!-- Today's Schedule -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-calendar-alt"></i>
+                            Agenda de Hoy
+                        </h2>
+                        <p class="card-description">Pacientes programados para hoy</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="item-list">
+                            <div class="list-item">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="width: 32px; height: 32px; background: var(--bg-tertiary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 500;">
+                                        MG
+                                    </div>
+                                    <div class="item-info">
+                                        <div class="item-title">María García</div>
+                                        <div class="item-subtitle">09:00 - Control</div>
+                                    </div>
+                                </div>
+                                <span class="badge badge-success">confirmada</span>
+                            </div>
+                            <div class="list-item">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="width: 32px; height: 32px; background: var(--bg-tertiary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 500;">
+                                        CL
+                                    </div>
+                                    <div class="item-info">
+                                        <div class="item-title">Carlos López</div>
+                                        <div class="item-subtitle">10:30 - Primera vez</div>
+                                    </div>
+                                </div>
+                                <span class="badge badge-secondary">en-espera</span>
+                            </div>
+                            <div class="list-item">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <i class="fas fa-exclamation-triangle" style="color: var(--error-color);"></i>
+                                    <div style="width: 32px; height: 32px; background: var(--bg-tertiary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 500;">
+                                        AR
+                                    </div>
+                                    <div class="item-info">
+                                        <div class="item-title">Ana Rodríguez</div>
+                                        <div class="item-subtitle">11:00 - Urgente</div>
+                                    </div>
+                                </div>
+                                <span class="badge badge-error">atrasada</span>
+                            </div>
+                            <div class="list-item">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="width: 32px; height: 32px; background: var(--bg-tertiary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 500;">
+                                        PM
+                                    </div>
+                                    <div class="item-info">
+                                        <div class="item-title">Pedro Martínez</div>
+                                        <div class="item-subtitle">14:00 - Control</div>
+                                    </div>
+                                </div>
+                                <span class="badge badge-success">confirmada</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline" style="width: 100%; margin-top: 1rem;">
+                            Ver Agenda Completa
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Clinical Alerts -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Alertas Clínicas
+                        </h2>
+                        <p class="card-description">Notificaciones importantes de pacientes</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="item-list">
+                            <div class="list-item">
+                                <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                    <div class="status-dot red" style="margin-top: 0.5rem;"></div>
+                                    <div class="item-info">
+                                        <div class="item-title">Juan Pérez</div>
+                                        <div class="item-subtitle">Valores críticos en hemograma</div>
+                                        <div class="item-meta">hace 15 min</div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-sm">Ver</button>
+                            </div>
+                            <div class="list-item">
+                                <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                    <div style="width: 8px; height: 8px; background: var(--warning-color); border-radius: 50%; margin-top: 0.5rem;"></div>
+                                    <div class="item-info">
+                                        <div class="item-title">Laura Silva</div>
+                                        <div class="item-subtitle">Resultado de biopsia disponible</div>
+                                        <div class="item-meta">hace 1 hora</div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-sm">Ver</button>
+                            </div>
+                            <div class="list-item">
+                                <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                    <div class="status-dot blue" style="margin-top: 0.5rem;"></div>
+                                    <div class="item-info">
+                                        <div class="item-title">Roberto Díaz</div>
+                                        <div class="item-subtitle">Cita de seguimiento vencida</div>
+                                        <div class="item-meta">hace 2 horas</div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-sm">Ver</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline" style="width: 100%; margin-top: 1rem;">
+                            Ver Todas las Alertas
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Studies -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-file-medical-alt"></i>
+                        Estudios y Procedimientos
+                    </h2>
+                    <p class="card-description">Seguimiento de estudios ordenados</p>
+                </div>
+                <div class="card-content">
+                    <div class="item-list">
+                        <div class="list-item">
+                            <div class="item-info">
+                                <div class="item-title">Carmen Vega</div>
+                                <div class="item-subtitle">Resonancia Magnética</div>
+                                <div class="item-meta">Ordenado: 2024-01-10</div>
+                            </div>
+                            <span class="badge badge-secondary">pendiente</span>
+                        </div>
+                        <div class="list-item">
+                            <div class="item-info">
+                                <div class="item-title">Miguel Torres</div>
+                                <div class="item-subtitle">Ecocardiograma</div>
+                                <div class="item-meta">Ordenado: 2024-01-12</div>
+                            </div>
+                            <span class="badge badge-warning">programado</span>
+                        </div>
+                        <div class="list-item">
+                            <div class="item-info">
+                                <div class="item-title">Isabel Moreno</div>
+                                <div class="item-subtitle">Tomografía</div>
+                                <div class="item-meta">Ordenado: 2024-01-13</div>
+                            </div>
+                            <span class="badge badge-success">completado</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline" style="width: 100%; margin-top: 1rem;">
+                        Ver Todos los Estudios
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Patient Search -->
+            <div class="card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-search"></i>
+                        Búsqueda Rápida de Pacientes
+                    </h2>
+                </div>
+                <div class="card-content">
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                        <input type="text" placeholder="Buscar por nombre, documento o código..." style="flex: 1; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                        <button class="btn btn-sm btn-primary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+                        <p>Búsqueda rápida en:</p>
+                        <ul style="list-style: disc; list-style-position: inside; margin-top: 0.25rem; display: flex; flex-direction: column; gap: 0.25rem;">
+                            <li>Pacientes asignados (245)</li>
+                            <li>Historias clínicas activas</li>
+                            <li>Centros médicos conectados (12)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../js/main.js"></script>
+    <script src="../../js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Sistema Médico</title>
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/responsive.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <div>
+                    <div class="sidebar-title">Sistema Médico</div>
+                    <div class="sidebar-subtitle">Integral</div>
+                </div>
+            </div>
+
+            <nav>
+                <ul class="sidebar-nav">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-users"></i>
+                            <span>Gestión de Usuarios</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-database"></i>
+                            <span>Integraciones</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Reportes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Seguridad</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-cog"></i>
+                            <span>Configuración</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                <div class="nav-link">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div style="width: 32px; height: 32px; background: var(--bg-tertiary); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 500; font-size: 0.875rem;">Admin Sistema</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">ADM001</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);">
+                    <div class="status-dot green"></div>
+                    <span>Sistema Operativo</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Panel de Administración</h1>
+                    <p class="page-subtitle">Sistema Médico Integral - Monitoreo y Control</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-sm btn-outline" style="margin-right: 1rem;">
+                        <i class="fas fa-cog"></i>
+                        Configuración
+                    </button>
+                    <span class="badge badge-success">
+                        <div class="status-dot green"></div>
+                        Sistema Operativo
+                    </span>
+                </div>
+            </div>
+
+            <!-- System Metrics -->
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Usuarios Activos</h3>
+                                <p>1,847</p>
+                                <div class="stat-trend">+12% vs mes anterior</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-content">
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Consultas/Día</h3>
+                                <p>2,341</p>
+                                <div class="stat-trend">+8% vs promedio</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-content">
+                        <div class="stat-card">
+                            <div class="stat-icon purple">
+                                <i class="fas fa-server"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Uptime Sistema</h3>
+                                <p>99.8%</p>
+                                <div class="stat-trend">Excelente</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-content">
+                        <div class="stat-card">
+                            <div class="stat-icon red">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Alertas Activas</h3>
+                                <p>3</p>
+                                <div style="color: var(--error-color); font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">Requiere atención</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Health -->
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                <!-- Usage Analytics -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Métricas de Uso del Sistema
+                        </h2>
+                        <p class="card-description">Evolución mensual de usuarios, consultas y estudios</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="chart-container" data-chart-type="bar" data-chart-data='[
+                            {"label": "Ene", "value": 1200},
+                            {"label": "Feb", "value": 1350},
+                            {"label": "Mar", "value": 1500},
+                            {"label": "Abr", "value": 1650},
+                            {"label": "May", "value": 1800},
+                            {"label": "Jun", "value": 1950}
+                        ]'></div>
+                    </div>
+                </div>
+
+                <!-- Integration Status -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-database"></i>
+                            Estado de Integraciones
+                        </h2>
+                        <p class="card-description">Conectividad con sistemas externos</p>
+                    </div>
+                    <div class="card-content">
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; font-size: var(--font-size-sm); margin-bottom: 0.5rem;">
+                                    <span>HL7</span>
+                                    <span>85%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 85%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; font-size: var(--font-size-sm); margin-bottom: 0.5rem;">
+                                    <span>FHIR</span>
+                                    <span>92%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 92%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; font-size: var(--font-size-sm); margin-bottom: 0.5rem;">
+                                    <span>DICOM</span>
+                                    <span>78%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 78%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; font-size: var(--font-size-sm); margin-bottom: 0.5rem;">
+                                    <span>APIs</span>
+                                    <span>95%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 95%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; padding: 0.75rem; background: #dbeafe; border-radius: var(--radius-lg);">
+                            <p style="font-size: var(--font-size-sm); font-weight: 500; color: #1e40af;">Centros Conectados</p>
+                            <p style="font-size: var(--font-size-2xl); font-weight: 700; color: #1e3a8a;">24</p>
+                            <p style="font-size: var(--font-size-xs); color: #3b82f6;">12 hospitales, 8 clínicas, 4 laboratorios</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Alerts and Requests -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                <!-- System Alerts -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Alertas del Sistema
+                        </h2>
+                        <p class="card-description">Notificaciones críticas y de mantenimiento</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="item-list">
+                            <div class="list-item">
+                                <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                    <div class="status-dot red" style="margin-top: 0.5rem;"></div>
+                                    <div class="item-info">
+                                        <div class="item-title" style="font-size: var(--font-size-sm);">Fallo en sincronización con Centro Norte</div>
+                                        <div class="item-meta">hace 5 min</div>
+                                    </div>
+                                </div>
+                                <span class="badge badge-error" style="font-size: var(--font-size-xs);">error</span>
+                            </div>
+                            <div class="list-item">
+                                <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                    <div style="width: 8px; height: 8px; background: var(--warning-color); border-radius: 50%; margin-top: 0.5rem;"></div>
+                                    <div class="item-info">
+                                        <div class="item-title" style="font-size: var(--font-size-sm);">Uso de almacenamiento al 85%</div>
+                                        <div class="item-meta">hace 15 min</div>
+                                    </div>
+                                </div>
+                                <span class="badge badge-warning" style="font-size: var(--font-size-xs);">warning</span>
+                            </div>
+                            <div class="list-item">
+                                <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                    <div class="status-dot blue" style="margin-top: 0.5rem;"></div>
+                                    <div class="item-info">
+                                        <div class="item-title" style="font-size: var(--font-size-sm);">Actualización de seguridad disponible</div>
+                                        <div class="item-meta">hace 1 hora</div>
+                                    </div>
+                                </div>
+                                <span class="badge badge-info" style="font-size: var(--font-size-xs);">info</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline" style="width: 100%; margin-top: 1rem;">
+                            Ver Todas las Alertas
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pending Requests -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-shield-alt"></i>
+                            Solicitudes Pendientes
+                        </h2>
+                        <p class="card-description">Requests que requieren aprobación administrativa</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="item-list">
+                            <div class="list-item">
+                                <div class="item-info">
+                                    <div class="item-title">Nuevo Usuario</div>
+                                    <div class="item-subtitle">Solicitado por: Dr. Ana López - Cardiología</div>
+                                    <div class="item-meta">Fecha: 2024-01-15</div>
+                                </div>
+                                <div class="item-actions">
+                                    <button class="btn btn-sm btn-outline">Revisar</button>
+                                    <button class="btn btn-sm btn-primary">Aprobar</button>
+                                </div>
+                            </div>
+                            <div class="list-item">
+                                <div class="item-info">
+                                    <div class="item-title">Acceso a Datos</div>
+                                    <div class="item-subtitle">Solicitado por: EPS Salud Total - Administración</div>
+                                    <div class="item-meta">Fecha: 2024-01-14</div>
+                                </div>
+                                <div class="item-actions">
+                                    <button class="btn btn-sm btn-outline">Revisar</button>
+                                    <button class="btn btn-sm btn-primary">Aprobar</button>
+                                </div>
+                            </div>
+                            <div class="list-item">
+                                <div class="item-info">
+                                    <div class="item-title">Integración</div>
+                                    <div class="item-subtitle">Solicitado por: Centro Médico Sur - IT</div>
+                                    <div class="item-meta">Fecha: 2024-01-13</div>
+                                </div>
+                                <div class="item-actions">
+                                    <button class="btn btn-sm btn-outline">Revisar</button>
+                                    <button class="btn btn-sm btn-primary">Aprobar</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline" style="width: 100%; margin-top: 1rem;">
+                            Ver Todas las Solicitudes
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Health Cards -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div class="card">
+                    <div class="card-header" style="padding-bottom: 0.5rem;">
+                        <h3 style="font-size: var(--font-size-sm);">Rendimiento del Servidor</h3>
+                    </div>
+                    <div class="card-content">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; font-size: var(--font-size-xs); margin-bottom: 0.25rem;">
+                                    <span>CPU</span>
+                                    <span>45%</span>
+                                </div>
+                                <div class="progress-bar" style="height: 4px;">
+                                    <div class="progress-fill" style="width: 45%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; font-size: var(--font-size-xs); margin-bottom: 0.25rem;">
+                                    <span>RAM</span>
+                                    <span>62%</span>
+                                </div>
+                                <div class="progress-bar" style="height: 4px;">
+                                    <div class="progress-fill" style="width: 62%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; font-size: var(--font-size-xs); margin-bottom: 0.25rem;">
+                                    <span>Almacenamiento</span>
+                                    <span>78%</span>
+                                </div>
+                                <div class="progress-bar" style="height: 4px;">
+                                    <div class="progress-fill" style="width: 78%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header" style="padding-bottom: 0.5rem;">
+                        <h3 style="font-size: var(--font-size-sm);">Seguridad</h3>
+                    </div>
+                    <div class="card-content">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <div style="display: flex; justify-content: space-between; font-size: var(--font-size-xs);">
+                                <span>Firewall</span>
+                                <span class="badge" style="font-size: var(--font-size-xs); padding: 0.125rem 0.5rem;">Activo</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: var(--font-size-xs);">
+                                <span>SSL/TLS</span>
+                                <span class="badge" style="font-size: var(--font-size-xs); padding: 0.125rem 0.5rem;">Válido</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: var(--font-size-xs);">
+                                <span>Backup</span>
+                                <span class="badge" style="font-size: var(--font-size-xs); padding: 0.125rem 0.5rem;">OK</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: var(--font-size-xs);">
+                                <span>Última Auditoría</span>
+                                <span style="font-size: var(--font-size-xs);">Ayer</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header" style="padding-bottom: 0.5rem;">
+                        <h3 style="font-size: var(--font-size-sm);">Conectividad</h3>
+                    </div>
+                    <div class="card-content">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <div style="display: flex; justify-content: space-between; font-size: var(--font-size-xs);">
+                                <span>Red Principal</span>
+                                <div class="status-dot green"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: var(--font-size-xs);">
+                                <span>Red Respaldo</span>
+                                <div class="status-dot green"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: var(--font-size-xs);">
+                                <span>VPN Centros</span>
+                                <div style="width: 8px; height: 8px; background: var(--warning-color); border-radius: 50%;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: var(--font-size-xs);">
+                                <span>API Gateway</span>
+                                <div class="status-dot green"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../js/main.js"></script>
+    <script src="../../js/dashboard.js"></script>
+</body>
+</html>
