@@ -1,0 +1,135 @@
+/* Estilos para mensajes de autenticación y validación */
+
+/* Mensajes de error y éxito */
+.error-message {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  margin-top: 1rem;
+  display: none;
+  font-size: 0.875rem;
+  animation: slideIn 0.3s ease-out;
+}
+
+.success-message {
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  margin-top: 1rem;
+  display: none;
+  font-size: 0.875rem;
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Animación para mensajes */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mejoras para campos de formulario con error */
+.form-group input.error {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.form-group select.error {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* Estilos para validación en tiempo real */
+.form-group .validation-icon {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875rem;
+}
+
+.form-group .validation-icon.success {
+  color: #16a34a;
+}
+
+.form-group .validation-icon.error {
+  color: #dc2626;
+}
+
+/* Mejoras para el botón de logout */
+#logoutBtn {
+  transition: all 0.2s ease;
+}
+
+#logoutBtn:hover {
+  background-color: #fee2e2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+/* Indicador de usuario autenticado */
+.user-authenticated {
+  position: relative;
+}
+
+.user-authenticated::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background: #16a34a;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+/* Estilos para campos de fecha con validación */
+input[type="date"].invalid {
+  border-color: #dc2626;
+  background-color: #fef2f2;
+}
+
+input[type="date"].valid {
+  border-color: #16a34a;
+  background-color: #f0fdf4;
+}
+
+/* Tooltip para ayuda de validación */
+.validation-tooltip {
+  position: absolute;
+  bottom: -1.5rem;
+  left: 0;
+  background: #1f2937;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.form-group:hover .validation-tooltip {
+  opacity: 1;
+}
+
+/* Estilos responsivos para mensajes */
+@media (max-width: 768px) {
+  .error-message,
+  .success-message {
+    font-size: 0.8125rem;
+    padding: 0.625rem;
+  }
+}

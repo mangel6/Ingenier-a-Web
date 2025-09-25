@@ -1,0 +1,490 @@
+/* Mobile First Responsive Design */
+
+/* Agregando breakpoint para tablets grandes */
+@media (max-width: 1200px) {
+  .sidebar {
+    width: 240px;
+  }
+
+  .main-content {
+    margin-left: 240px;
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+  }
+
+  .page-header {
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+  }
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 220px;
+  }
+
+  .main-content {
+    margin-left: 220px;
+    padding: var(--spacing-lg);
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+  }
+
+  /* Mejorando layout de timeline en tablet */
+  .timeline-header {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    align-items: flex-start;
+  }
+
+  .timeline-date {
+    text-align: left;
+  }
+
+  /* Ajustando stat cards para tablet */
+  .stat-card {
+    gap: var(--spacing-sm);
+  }
+
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+    font-size: var(--font-size-lg);
+  }
+}
+
+/* Nuevo breakpoint para tablets pequeñas */
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 280px;
+    transform: translateX(-100%);
+    z-index: 1000;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .sidebar.active {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: var(--spacing-md);
+  }
+
+  /* Agregando overlay para sidebar móvil */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Botón hamburguesa visible en tablet pequeña */
+  .sidebar-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .sidebar-toggle-btn:hover {
+    background: var(--bg-tertiary);
+  }
+
+  /* Header móvil con botón hamburguesa */
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .mobile-header-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 280px;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .login-container {
+    padding: var(--spacing-sm);
+  }
+
+  .login-card {
+    max-width: 100%;
+    margin: var(--spacing-sm);
+  }
+
+  .page-title {
+    font-size: var(--font-size-2xl);
+  }
+
+  .timeline {
+    padding-left: var(--spacing-md);
+  }
+
+  .timeline-marker {
+    left: -1.5rem;
+  }
+
+  .timeline-item:not(:last-child)::before {
+    left: -1.25rem;
+  }
+
+  .list-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .item-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* Mejorando formularios en móvil */
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 16px; /* Previene zoom en iOS */
+  }
+
+  /* Mejorando tablas en móvil */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table {
+    min-width: 600px;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .sidebar {
+    width: 100%;
+  }
+
+  .sidebar-header {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-sm);
+  }
+
+  .nav-link {
+    padding: var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+
+  .stat-card {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-sm);
+  }
+
+  .timeline-header {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .timeline-date {
+    text-align: left;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-sm {
+    width: auto;
+    min-width: 44px; /* Tamaño mínimo para touch */
+  }
+
+  .item-actions {
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+  }
+
+  /* Mejorando login en móvil pequeño */
+  .login-header h1 {
+    font-size: var(--font-size-xl);
+  }
+
+  .login-header h2 {
+    font-size: var(--font-size-lg);
+  }
+
+  .logo-container {
+    width: 48px;
+    height: 48px;
+  }
+
+  .logo-container i {
+    font-size: var(--font-size-xl);
+  }
+
+  /* Mejorando cards en móvil pequeño */
+  .card {
+    margin: 0 var(--spacing-xs);
+  }
+
+  .card-content,
+  .card-header {
+    padding: var(--spacing-md);
+  }
+}
+
+/* Breakpoint para móviles muy pequeños */
+@media (max-width: 360px) {
+  .main-content {
+    padding: var(--spacing-sm);
+  }
+
+  .page-title {
+    font-size: var(--font-size-xl);
+  }
+
+  .card-grid {
+    gap: var(--spacing-sm);
+  }
+
+  .login-container {
+    padding: var(--spacing-xs);
+  }
+
+  .btn {
+    padding: var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .sidebar,
+  .header-actions,
+  .btn,
+  .nav-link,
+  .sidebar-toggle-btn,
+  .mobile-header {
+    display: none !important;
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding: 0;
+  }
+
+  .card {
+    box-shadow: none;
+    border: 1px solid #000;
+    break-inside: avoid;
+  }
+
+  .page-title {
+    color: #000;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  :root {
+    --border-color: #000;
+    --text-secondary: #000;
+    --bg-secondary: #fff;
+  }
+
+  .card {
+    border: 2px solid #000;
+  }
+
+  .btn-primary {
+    background: #000;
+    border: 2px solid #000;
+  }
+
+  .btn-secondary {
+    border: 2px solid #000;
+    color: #000;
+  }
+
+  .sidebar-toggle-btn {
+    border: 2px solid #000;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .sidebar {
+    transition: none !important;
+  }
+
+  .sidebar-overlay {
+    transition: none !important;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #1f2937;
+    --bg-secondary: #111827;
+    --bg-tertiary: #374151;
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --text-muted: #9ca3af;
+    --border-color: #374151;
+  }
+
+  .login-container {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  }
+
+  .security-notice {
+    background: #451a03;
+    border-color: #92400e;
+  }
+
+  .notice-content i,
+  .notice-title,
+  .notice-content p:last-child {
+    color: #fbbf24;
+  }
+
+  .sidebar-overlay {
+    background: rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* Utilidades responsive adicionales */
+.hide-mobile {
+  display: block;
+}
+
+.show-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+
+  .show-mobile {
+    display: block !important;
+  }
+
+  .show-mobile-flex {
+    display: flex !important;
+  }
+
+  .show-mobile-inline {
+    display: inline !important;
+  }
+}
+
+/* Mejoras para touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .btn,
+  .nav-link,
+  .list-item {
+    min-height: 44px;
+  }
+
+  .btn-sm {
+    min-height: 36px;
+    min-width: 36px;
+  }
+
+  .password-toggle {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* En escritorio el toggle no se muestra */
+@media (min-width: 901px) {
+  .sidebar-toggle-btn,
+  .mobile-header,
+  .sidebar-overlay {
+    display: none !important;
+  }
+}
