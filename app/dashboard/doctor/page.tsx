@@ -257,7 +257,7 @@ export default function DoctorDashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" className="h-20 flex flex-col gap-2 bg-transparent">
+                <Button variant="outline" className="h-20 flex flex-col gap-2 bg-transparent" onClick={() => router.push('/dashboard/doctor/upload')}>
                   <FileText className="w-6 h-6" />
                   <span className="text-sm">Nueva Historia</span>
                 </Button>
