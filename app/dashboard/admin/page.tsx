@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Users, Activity, Server, AlertTriangle, Shield, Database, BarChart3, Settings } from "lucide-react"
+import { Users, Activity, Server, AlertTriangle, Shield, Database, BarChart3, Settings, LogOut } from "lucide-react"
 import { authSystem } from "@/lib/auth"
 
 export default function AdminDashboard() {
@@ -18,6 +18,11 @@ export default function AdminDashboard() {
       router.push("/login")
     }
   }, [router])
+
+  const handleLogout = () => {
+    authSystem.logout()
+    router.push("/login")
+  }
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -31,6 +36,10 @@ export default function AdminDashboard() {
             <Button variant="outline" size="sm">
               <Settings className="w-4 h-4 mr-2" />
               Configuración
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Cerrar Sesión
             </Button>
             <Badge variant="secondary" className="bg-green-100 text-green-800">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-2" />

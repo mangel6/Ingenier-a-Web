@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Users, FileText, Clock, Stethoscope, Activity, Bell, Plus, Search, Filter } from "lucide-react"
+import { Calendar, Users, FileText, Clock, Stethoscope, Activity, Bell, Plus, Search, Filter, LogOut } from "lucide-react"
 import { authSystem } from "@/lib/auth"
 
 export default function DoctorDashboard() {
@@ -17,6 +17,11 @@ export default function DoctorDashboard() {
       router.push("/login")
     }
   }, [router])
+
+  const handleLogout = () => {
+    authSystem.logout()
+    router.push("/login")
+  }
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -33,6 +38,9 @@ export default function DoctorDashboard() {
             </Button>
             <Button variant="outline" size="sm">
               <Bell className="w-4 h-4" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="w-4 h-4" />
             </Button>
           </div>
         </div>

@@ -1,6 +1,9 @@
 // Configuración para integración con backend real
+console.log("backend-integration.js loaded");
+
 class BackendIntegration {
   constructor() {
+    console.log("BackendIntegration instance created");
     this.baseURL = "/api" // CAMBIAR POR LA URL REAL
 
     this.useRealBackend = true // Cambiar a true cuando el backend esté listo
@@ -92,22 +95,14 @@ class BackendIntegration {
 
   // Método para subir documento clínico
   async uploadClinicalDocument(documentData) {
-    console.log("[DEBUG] BackendIntegration.uploadClinicalDocument called")
-    console.log("[DEBUG] useRealBackend:", this.useRealBackend)
-    console.log("[DEBUG] baseURL:", this.baseURL)
-
     if (!this.useRealBackend) {
       // Simular subida exitosa en modo local
-      console.log("[DEBUG] Using mock mode - payload:", JSON.stringify(documentData, null, 2))
-      console.log("[DEBUG] Mock upload successful")
+      console.log("Mock upload payload:", JSON.stringify(documentData, null, 2))
       return { success: true, message: "Documento subido exitosamente (modo local)" }
     }
 
     try {
-      console.log("[DEBUG] Making real API call to:", `${this.baseURL}/v1/clinical-documents`)
-      console.log("[DEBUG] Request payload:", JSON.stringify(documentData, null, 2))
-
-      const response = await fetch(`${this.baseURL}/v1/clinical-documents`, {
+      const response = await fetch(`http://localhost:8080/MedCloud/api/v1/clinical-documents`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -115,21 +110,141 @@ class BackendIntegration {
         body: JSON.stringify(documentData),
       })
 
-      console.log("[DEBUG] Response status:", response.status)
-      console.log("[DEBUG] Response ok:", response.ok)
-
       const result = await response.json()
-      console.log("[DEBUG] Response body:", result)
 
       if (response.ok) {
-        console.log("[DEBUG] Real API call successful")
         return { success: true, message: result.message || "Documento subido exitosamente" }
       } else {
-        console.log("[DEBUG] Real API call failed")
         return { success: false, message: result.message || "Error al subir documento" }
       }
     } catch (error) {
-      console.error("[DEBUG] Error de conexión:", error)
+      console.error("Error de conexión:", error)
+      return { success: false, message: "Error de conexión con el servidor" }
+    }
+  }
+
+  // Método para obtener documentos clínicos del paciente
+  async fetchClinicalDocuments(patientId) {
+    if (!this.useRealBackend) {
+      // Simular documentos en modo local
+      console.log("Mock fetch for patient:", patientId)
+      return {
+        success: true,
+        documents: [
+          {
+            id: 1,
+            patientId: patientId,
+            uploadedByUserId: "doctor-uuid",
+            kind: "PDF",
+            filename: "historia_clinica_ejemplo.pdf",
+            mimeType: "application/pdf",
+            sizeBytes: 245760,
+            uploadedAt: "2024-01-15T10:30:00Z"
+          }
+        ]
+      }
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8080/MedCloud/api/v1/clinical-documents?patientId=${patientId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        return { success: true, documents: result.documents || result }
+      } else {
+        return { success: false, message: result.message || "Error al obtener documentos" }
+      }
+    } catch (error) {
+      console.error("Error de conexión:", error)
+      return { success: false, message: "Error de conexión con el servidor" }
+    }
+  }
+  // Método para obtener documentos clínicos del paciente por backendId
+  async fetchClinicalDocumentsForPatient(backendId) {
+    console.log("fetchClinicalDocumentsForPatient called with backendId:", backendId);
+    if (!this.useRealBackend) {
+      // Simular documentos en modo local
+      console.log("Mock fetch for patient backendId:", backendId)
+      return {
+        success: true,
+        documents: [
+          {
+            id: 1,
+            patientId: backendId,
+            uploadedByUserId: "doctor-uuid",
+            kind: "PDF",
+            filename: "historia_clinica_ejemplo.pdf",
+            mimeType: "application/pdf",
+            sizeBytes: 245760,
+            uploadedAt: "2024-01-15T10:30:00Z"
+          }
+        ]
+      }
+    }
+
+    try {
+      console.log("Making real API call to fetch documents for patient:", backendId);
+      const response = await fetch(`${this.baseURL}/v1/clinical-documents/patient/${backendId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      const result = await response.json()
+      console.log("API response received:", result);
+
+      if (response.ok) {
+        return { success: true, documents: result.documents || result }
+      } else {
+        return { success: false, message: result.message || "Error al obtener documentos" }
+      }
+    } catch (error) {
+      console.error("Error de conexión:", error)
+      return { success: false, message: "Error de conexión con el servidor" }
+    }
+  }
+
+  // Método para obtener el contenido de un documento específico
+  async fetchClinicalDocumentContent(documentId, patientId) {
+    if (!this.useRealBackend) {
+      // Simular contenido en modo local
+      console.log("Mock fetch content for document:", documentId, "patientId:", patientId)
+      return {
+        success: true,
+        content: "JVBERi0xLjQKJeLjz9MK...", // Base64 mock
+        mimeType: "application/pdf"
+      }
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8080/MedCloud/api/v1/clinical-documents/${documentId}/content?patientId=${patientId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (response.ok) {
+        const content = await response.text() // Assuming base64 content
+        const contentType = response.headers.get('content-type')
+        return {
+          success: true,
+          content: content,
+          mimeType: contentType || "application/pdf"
+        }
+      } else {
+        const result = await response.json()
+        return { success: false, message: result.message || "Error al obtener contenido del documento" }
+      }
+    } catch (error) {
+      console.error("Error de conexión:", error)
       return { success: false, message: "Error de conexión con el servidor" }
     }
   }

@@ -195,6 +195,101 @@ class AuthSystem {
       return { success: true, user: localUser }
     }
 
+    // If no local user found, try to authenticate against backend directly
+    console.log("[AUTH] No local user found, attempting backend authentication")
+    try {
+      console.log("[AUTH] Attempting to fetch all users from backend for authentication")
+      const response = await fetch('http://localhost:8080/MedCloud/api/v1/users/', {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': 'http://localhost:3000',
+          'Access-Control-Allow-Methods': 'GET',
+          'Access-Control-Allow-Headers': 'Content-Type'
+        }
+      })
+
+      if (response.ok) {
+        const users = await response.json()
+        console.log("[AUTH] Backend users array for auth:", users)
+
+        // Find user by username/email and check password (assuming backend stores plain text for now)
+        console.log("[AUTH] Searching for user with criteria:", {
+          inputUsuario: usuario,
+          inputTipoUsuario: tipoUsuario,
+          password: password
+        })
+
+        const backendUser = users.find((u: any) => {
+          const usernameMatch = u.username?.toLowerCase() === usuario.toLowerCase()
+          const emailMatch = u.email?.toLowerCase() === usuario.toLowerCase()
+          // For now, only check username/email match as requested
+          // TODO: Implement proper password and role checking once backend provides correct data
+          const passwordMatch = true // Temporarily skip password check
+          const roleMatch = true // Temporarily allow any role
+
+          console.log("[AUTH] Checking user:", u.username, {
+            usernameMatch,
+            emailMatch,
+            passwordMatch,
+            roleMatch,
+            userRole: u.role,
+            userRoles: u.roles
+          })
+
+          return (usernameMatch || emailMatch) && passwordMatch && roleMatch
+        })
+
+        if (backendUser) {
+          console.log("[AUTH] Backend authentication successful for user:", backendUser.username)
+
+          // Create local user entry for future logins
+          const newLocalUser: User = {
+            id: this.users.length + 1,
+            backendId: backendUser.id,
+            usuario: backendUser.username || backendUser.email,
+            email: backendUser.email,
+            password: backendUser.password, // Store password locally for future offline access
+            tipoUsuario: tipoUsuario,
+            nombre: backendUser.fullName || backendUser.username?.split('@')[0] || 'Usuario',
+            nombreCompleto: backendUser.fullName,
+            tipoDocumento: backendUser.documentType,
+            numeroDocumento: backendUser.documentNumber,
+            fechaNacimiento: backendUser.birthDate,
+            licenciaMedica: backendUser.licenseNumber,
+            especialidad: backendUser.specialty,
+          }
+
+          this.users.push(newLocalUser)
+          this.saveUsers()
+
+          // Save session
+          const sessionData: SessionUser = {
+            id: newLocalUser.id,
+            backendId: backendUser.id,
+            usuario: newLocalUser.usuario,
+            tipoUsuario: newLocalUser.tipoUsuario,
+            nombre: newLocalUser.nombre,
+          }
+
+          console.log("[v0] Guardando sesión para usuario backend:", sessionData)
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem("currentUser", JSON.stringify(sessionData))
+          }
+
+          return { success: true, user: newLocalUser }
+        } else {
+          console.log("[AUTH] No matching user found in backend")
+        }
+      } else {
+        console.log("[AUTH] Backend fetch failed for authentication")
+      }
+    } catch (error) {
+      console.error('[AUTH] Backend authentication error:', error)
+    }
+
     return { success: false, message: "Credenciales incorrectas o tipo de usuario no coincide" }
   }
 

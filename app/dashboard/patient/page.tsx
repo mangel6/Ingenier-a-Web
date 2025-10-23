@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, FileText, Heart, Pill, User, Clock, Phone, MapPin, Download, Eye } from "lucide-react"
+import { Calendar, FileText, Heart, Pill, User, Clock, Phone, MapPin, Download, Eye, LogOut } from "lucide-react"
 import { authSystem } from "@/lib/auth"
 
 export default function PatientDashboard() {
@@ -17,6 +17,11 @@ export default function PatientDashboard() {
       router.push("/login")
     }
   }, [router])
+
+  const handleLogout = () => {
+    authSystem.logout()
+    router.push("/login")
+  }
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -34,6 +39,10 @@ export default function PatientDashboard() {
             <Button variant="outline" size="sm">
               <Phone className="w-4 h-4 mr-2" />
               Contactar
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Cerrar Sesión
             </Button>
           </div>
         </div>
@@ -325,7 +334,7 @@ export default function PatientDashboard() {
                 </div>
               </div>
 
-              <Button variant="outline" className="w-full mt-4 bg-transparent">
+              <Button variant="outline" className="w-full mt-4 bg-transparent" onClick={() => router.push('/dashboard/patient/history')}>
                 Ver Historial Completo
               </Button>
             </CardContent>

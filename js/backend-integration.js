@@ -119,6 +119,101 @@ class BackendIntegration {
       return { success: false, message: "Error de conexión con el servidor" }
     }
   }
+
+  // Método para obtener documentos clínicos del paciente
+  async fetchClinicalDocuments(patientId) {
+    if (!this.useRealBackend) {
+      // Simular documentos en modo local
+      console.log("Mock fetch for patient:", patientId)
+      return {
+        success: true,
+        documents: [
+          {
+            id: 1,
+            patientId: patientId,
+            uploadedByUserId: "doctor-uuid",
+            kind: "PDF",
+            filename: "historia_clinica_ejemplo.pdf",
+            mimeType: "application/pdf",
+            sizeBytes: 245760,
+            uploadedAt: "2024-01-15T10:30:00Z"
+          }
+        ]
+      }
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8080/MedCloud/api/v1/clinical-documents?patientId=${patientId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        return { success: true, documents: result.documents || result }
+      } else {
+        return { success: false, message: result.message || "Error al obtener documentos" }
+      }
+    } catch (error) {
+      console.error("Error de conexión:", error)
+      return { success: false, message: "Error de conexión con el servidor" }
+    }
+  }
+  // Método para obtener documentos clínicos del paciente por backendId
+  async fetchClinicalDocumentsForPatient(backendId) {
+    if (!this.useRealBackend) {
+      // Simular documentos en modo local
+      console.log("Mock fetch for patient backendId:", backendId)
+      return {
+        success: true,
+        documents: [
+          {
+            id: 1,
+            patientId: backendId,
+            uploadedByUserId: "doctor-uuid",
+            kind: "PDF",
+            filename: "historia_clinica_ejemplo.pdf",
+            fileContentBase64: "JVBERi0xLjQKJeLjz9MK...", // Base64 mock
+            mimeType: "application/pdf",
+            sizeBytes: 245760,
+            uploadedAt: "2024-01-15T10:30:00Z"
+          }
+        ]
+      }
+    }
+
+    try {
+      const response = await fetch(`${this.baseURL}/v1/clinical-documents/patient/${backendId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        return { success: true, documents: result.documents || result }
+      } else {
+        return { success: false, message: result.message || "Error al obtener documentos" }
+      }
+    } catch (error) {
+      console.error("Error de conexión:", error)
+      return { success: false, message: "Error de conexión con el servidor" }
+    }
+  }
+
+  // Método para obtener el contenido de un documento específico (deprecated - content now included in document list)
+  async fetchClinicalDocumentContent(documentId, patientId) {
+    console.warn("fetchClinicalDocumentContent is deprecated. Content is now included in the document list response.")
+    return {
+      success: false,
+      message: "This method is deprecated. Use the document list which includes fileContentBase64."
+    }
+  }
 }
 
 // Instancia global para integración con backend
