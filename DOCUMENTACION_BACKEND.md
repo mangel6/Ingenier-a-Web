@@ -7,7 +7,7 @@ Para cambiar del sistema local al backend real, edita el archivo `js/backend-int
 
 \`\`\`javascript
 // Cambiar estas líneas:
-this.baseURL = 'https://tu-backend.com/api' // ✅ CAMBIAR POR TU URL REAL
+this.baseURL = 'https://localhost:8080/api' // ✅ CAMBIAR POR TU URL REAL
 this.useRealBackend = true // ✅ CAMBIAR A true
 \`\`\`
 

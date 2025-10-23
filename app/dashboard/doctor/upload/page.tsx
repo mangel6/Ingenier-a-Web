@@ -1,6 +1,15 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
+
+// Type declaration for window.backendIntegration
+declare global {
+  interface Window {
+    backendIntegration: {
+      uploadClinicalDocument: (payload: any) => Promise<{ success: boolean; message: string }>
+    }
+  }
+}
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -25,11 +34,13 @@ type UploadFormData = z.infer<typeof uploadSchema>
 
 export default function UploadPage() {
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<File | null>(null)
   const [fileContentBase64, setFileContentBase64] = useState<string>("")
   const [mimeType, setMimeType] = useState<string>("")
   const [sizeBytes, setSizeBytes] = useState<number>(0)
   const [currentDoctorId, setCurrentDoctorId] = useState<string>("")
+  const [isUploading, setIsUploading] = useState<boolean>(false)
 
   const form = useForm<UploadFormData>({
     resolver: zodResolver(uploadSchema),
@@ -68,11 +79,17 @@ export default function UploadPage() {
     }
   }
 
-  const onSubmit = (data: UploadFormData) => {
+  const onSubmit = async (data: UploadFormData) => {
+    console.log("[DEBUG] onSubmit called with data:", data)
     if (!file) {
+      console.log("[DEBUG] No file selected")
       alert("Por favor seleccione un archivo para subir")
       return
     }
+
+    console.log("[DEBUG] File selected:", file.name)
+    setIsUploading(true)
+    console.log("[DEBUG] Set isUploading to true")
 
     const payload = {
       patientId: data.patientId,
@@ -83,11 +100,38 @@ export default function UploadPage() {
       mimeType,
       sizeBytes,
     }
+    console.log("[DEBUG] Payload constructed:", payload)
 
-    console.log("Upload payload:", JSON.stringify(payload, null, 2))
+    try {
+      console.log("[DEBUG] Checking if window.backendIntegration exists:", !!window.backendIntegration)
+      // Access the backend integration from window object
+      const result = await window.backendIntegration.uploadClinicalDocument(payload)
+      console.log("[DEBUG] Backend integration result:", result)
 
-    // For now, just show success message
-    alert("¡Archivo subido exitosamente! Revise la consola para el payload.")
+      if (result.success) {
+        console.log("[DEBUG] Upload successful, resetting form")
+        alert("¡Archivo subido exitosamente!")
+        // Reset form
+        form.reset()
+        setFile(null)
+        setFileContentBase64("")
+        setMimeType("")
+        setSizeBytes(0)
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ""
+        }
+      } else {
+        console.log("[DEBUG] Upload failed with message:", result.message)
+        alert(`Error al subir archivo: ${result.message}`)
+      }
+    } catch (error) {
+      console.error("[DEBUG] Error uploading document:", error)
+      alert("Error inesperado al subir el archivo. Por favor intente nuevamente.")
+    } finally {
+      console.log("[DEBUG] Setting isUploading to false")
+      setIsUploading(false)
+    }
   }
 
   return (
@@ -169,6 +213,7 @@ export default function UploadPage() {
                   <FormLabel>Archivo</FormLabel>
                   <div className="flex items-center gap-4">
                     <Input
+                      ref={fileInputRef}
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                       onChange={handleFileChange}
@@ -218,9 +263,9 @@ export default function UploadPage() {
                 </div>
 
                 {/* Submit Button */}
-                <Button type="submit" className="w-full" disabled={!file}>
+                <Button type="submit" className="w-full" disabled={!file || isUploading}>
                   <Upload className="w-4 h-4 mr-2" />
-                  Subir Documento
+                  {isUploading ? "Subiendo..." : "Subir Documento"}
                 </Button>
               </form>
             </Form>

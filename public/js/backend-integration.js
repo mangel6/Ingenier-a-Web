@@ -92,14 +92,22 @@ class BackendIntegration {
 
   // Método para subir documento clínico
   async uploadClinicalDocument(documentData) {
+    console.log("[DEBUG] BackendIntegration.uploadClinicalDocument called")
+    console.log("[DEBUG] useRealBackend:", this.useRealBackend)
+    console.log("[DEBUG] baseURL:", this.baseURL)
+
     if (!this.useRealBackend) {
       // Simular subida exitosa en modo local
-      console.log("Mock upload payload:", JSON.stringify(documentData, null, 2))
+      console.log("[DEBUG] Using mock mode - payload:", JSON.stringify(documentData, null, 2))
+      console.log("[DEBUG] Mock upload successful")
       return { success: true, message: "Documento subido exitosamente (modo local)" }
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/MedCloud/api/v1/clinical-documents`, {
+      console.log("[DEBUG] Making real API call to:", `${this.baseURL}/v1/clinical-documents`)
+      console.log("[DEBUG] Request payload:", JSON.stringify(documentData, null, 2))
+
+      const response = await fetch(`${this.baseURL}/v1/clinical-documents`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -107,15 +115,21 @@ class BackendIntegration {
         body: JSON.stringify(documentData),
       })
 
+      console.log("[DEBUG] Response status:", response.status)
+      console.log("[DEBUG] Response ok:", response.ok)
+
       const result = await response.json()
+      console.log("[DEBUG] Response body:", result)
 
       if (response.ok) {
+        console.log("[DEBUG] Real API call successful")
         return { success: true, message: result.message || "Documento subido exitosamente" }
       } else {
+        console.log("[DEBUG] Real API call failed")
         return { success: false, message: result.message || "Error al subir documento" }
       }
     } catch (error) {
-      console.error("Error de conexión:", error)
+      console.error("[DEBUG] Error de conexión:", error)
       return { success: false, message: "Error de conexión con el servidor" }
     }
   }

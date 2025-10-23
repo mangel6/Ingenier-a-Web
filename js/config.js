@@ -8,7 +8,7 @@ const CONFIG = {
 
   PRODUCTION: {
     useRealBackend: true,
-    backendURL: "https://tu-backend-real.com/api",
+    backendURL: "http://localhost:8080/api",
     debugMode: false,
   },
 
