@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Eye, EyeOff, Shield, User, Stethoscope, UserCog, Building } from "lucide-react"
 import { authSystem } from "@/lib/auth"
 
-type UserType = "patient" | "doctor" | "admin" | "eps" | ""
+type UserType = "paciente" | "doctor" | "admin" | "eps" | ""
 
 interface LoginData {
   userType: UserType
@@ -69,7 +69,7 @@ export default function LoginPage() {
     setIsSubmitting(true)
 
     try {
-      const result = authSystem.validateUser(loginData.username.toLowerCase(), loginData.password, loginData.userType)
+      const result = await authSystem.validateUser(loginData.username.toLowerCase(), loginData.password, loginData.userType)
 
       if (result.success) {
         // Redirigir según el tipo de usuario
@@ -88,7 +88,7 @@ export default function LoginPage() {
             break
         }
       } else {
-        setErrors({ general: result.message })
+        setErrors({ general: result.message || "Credenciales incorrectas" })
       }
     } catch (error) {
       console.error("Error al iniciar sesión:", error)
@@ -100,7 +100,7 @@ export default function LoginPage() {
 
   const getUserTypeIcon = (type: UserType) => {
     switch (type) {
-      case "patient":
+      case "paciente":
         return <User className="w-4 h-4" />
       case "doctor":
         return <Stethoscope className="w-4 h-4" />
@@ -115,7 +115,7 @@ export default function LoginPage() {
 
   const getUserTypeLabel = (type: UserType) => {
     switch (type) {
-      case "patient":
+      case "paciente":
         return "Paciente"
       case "doctor":
         return "Médico"

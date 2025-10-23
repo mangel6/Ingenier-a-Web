@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ArrowLeft, User, UserCheck, FileText, Award, Stethoscope, CheckCircle, AlertCircle } from "lucide-react"
 
-type UserRole = "doctor" | "paciente" | ""
+type UserRole = "doctor" | "paciente" | "admin" | ""
 
 interface FormData {
   username: string
@@ -20,14 +20,14 @@ interface FormData {
   password: string
   confirmPassword: string
   role: UserRole
+  // Common required fields for all users
+  fullName: string
+  documentType: string
+  documentNumber: string
+  birthDate: string
   // Campos específicos para doctor
   licencia?: string
   especialidad?: string
-  // Campos específicos para paciente
-  nombre?: string
-  tipoDocumento?: string
-  numeroDocumento?: string
-  fechaNacimiento?: string
 }
 
 interface ApiResponse {
@@ -42,6 +42,10 @@ export default function RegistroPage() {
     password: "",
     confirmPassword: "",
     role: "",
+    fullName: "",
+    documentType: "",
+    documentNumber: "",
+    birthDate: "",
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -55,10 +59,10 @@ export default function RegistroPage() {
       email: data.email.trim().toLowerCase(),
       password: data.password,
       confirmPassword: data.confirmPassword,
+      fullName: data.fullName.trim(),
+      documentNumber: data.documentNumber.trim(),
       licencia: data.licencia?.trim(),
       especialidad: data.especialidad?.trim(),
-      nombre: data.nombre?.trim(),
-      numeroDocumento: data.numeroDocumento?.trim(),
     }
   }
 
@@ -102,6 +106,20 @@ export default function RegistroPage() {
       newErrors.role = "Debes seleccionar un rol"
     }
 
+    // Validaciones comunes para todos los roles
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = "El nombre completo es requerido"
+    }
+    if (!formData.documentType) {
+      newErrors.documentType = "El tipo de documento es requerido"
+    }
+    if (!formData.documentNumber.trim()) {
+      newErrors.documentNumber = "El número de documento es requerido"
+    }
+    if (!formData.birthDate) {
+      newErrors.birthDate = "La fecha de nacimiento es requerida"
+    }
+
     // Validaciones específicas por rol
     if (formData.role === "doctor") {
       if (!formData.licencia?.trim()) {
@@ -112,45 +130,41 @@ export default function RegistroPage() {
       }
     }
 
-    if (formData.role === "paciente") {
-      if (!formData.nombre?.trim()) {
-        newErrors.nombre = "El nombre completo es requerido"
-      }
-      if (!formData.tipoDocumento) {
-        newErrors.tipoDocumento = "El tipo de documento es requerido"
-      }
-      if (!formData.numeroDocumento?.trim()) {
-        newErrors.numeroDocumento = "El número de documento es requerido"
-      }
-      if (!formData.fechaNacimiento) {
-        newErrors.fechaNacimiento = "La fecha de nacimiento es requerida"
-      }
-    }
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const submitToBackend = async (cleanedData: FormData): Promise<ApiResponse> => {
+    console.log("[REGISTRO] submitToBackend called with:", cleanedData)
     try {
       // Import auth system dynamically to avoid SSR issues
+      console.log("[REGISTRO] Importing auth system...")
       const { authSystem } = await import("@/lib/auth")
+      console.log("[REGISTRO] Auth system imported successfully")
 
-      const result = authSystem.registerUser({
-        usuario: cleanedData.email,
+      const userData = {
+        usuario: cleanedData.username,
+        email: cleanedData.email,
         password: cleanedData.password,
         tipoUsuario: cleanedData.role,
-        nombreCompleto: cleanedData.nombre,
-        tipoDocumento: cleanedData.tipoDocumento,
-        numeroDocumento: cleanedData.numeroDocumento,
-        fechaNacimiento: cleanedData.fechaNacimiento,
-        licenciaMedica: cleanedData.licencia,
-        especialidad: cleanedData.especialidad,
-      })
+        nombreCompleto: cleanedData.fullName,
+        tipoDocumento: cleanedData.documentType,
+        numeroDocumento: cleanedData.documentNumber,
+        fechaNacimiento: cleanedData.birthDate,
+        ...(cleanedData.role === "doctor" && {
+          licenciaMedica: cleanedData.licencia,
+          especialidad: cleanedData.especialidad,
+        }),
+      }
+      console.log("[REGISTRO] Complete JSON payload:", JSON.stringify(userData, null, 2))
+      console.log("[REGISTRO] Calling authSystem.registerUser with:", userData)
+
+      const result = await authSystem.registerUser(userData)
+      console.log("[REGISTRO] authSystem.registerUser result:", result)
 
       return {
         status: result.success ? "success" : "error",
-        message: result.message,
+        message: result.message || "Error desconocido",
       }
     } catch (error) {
       console.error("Error al registrar usuario:", error)
@@ -163,18 +177,23 @@ export default function RegistroPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log("[REGISTRO] Form submitted")
 
     if (!validateForm()) {
+      console.log("[REGISTRO] Form validation failed")
       return
     }
+    console.log("[REGISTRO] Form validation passed")
 
     setIsSubmitting(true)
     setApiMessage(null)
 
     try {
       const cleanedData = cleanFormData(formData)
+      console.log("[REGISTRO] Cleaned data:", cleanedData)
 
       const result = await submitToBackend(cleanedData)
+      console.log("[REGISTRO] Backend result:", result)
 
       if (result.status === "success") {
         setFormData({
@@ -183,6 +202,10 @@ export default function RegistroPage() {
           password: "",
           confirmPassword: "",
           role: "",
+          fullName: "",
+          documentType: "",
+          documentNumber: "",
+          birthDate: "",
         })
         setApiMessage({ type: "success", text: result.message })
       } else {
@@ -315,6 +338,12 @@ export default function RegistroPage() {
                             Paciente
                           </div>
                         </SelectItem>
+                        <SelectItem value="admin">
+                          <div className="flex items-center gap-2">
+                            <Award className="w-4 h-4" />
+                            Administrador
+                          </div>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     {errors.role && <p className="text-sm text-destructive">{errors.role}</p>}
@@ -322,133 +351,136 @@ export default function RegistroPage() {
                 </div>
               </div>
 
-              {/* Campos específicos por rol */}
+              {/* Campos comunes para todos los roles */}
               {formData.role && (
                 <>
                   <Separator />
 
-                  {formData.role === "doctor" && (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                        <Award className="w-4 h-4" />
-                        Información Profesional
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                      <FileText className="w-4 h-4" />
+                      Información Personal
+                    </div>
+
+                    <div className="grid gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="fullName">Nombre Completo</Label>
+                        <Input
+                          id="fullName"
+                          type="text"
+                          placeholder="Nombres y apellidos completos"
+                          value={formData.fullName}
+                          onChange={(e) => handleInputChange("fullName", e.target.value)}
+                          className={errors.fullName ? "border-destructive" : ""}
+                        />
+                        {errors.fullName && <p className="text-sm text-destructive">{errors.fullName}</p>}
                       </div>
 
-                      <div className="grid gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="licencia">Número de Licencia Médica</Label>
-                          <Input
-                            id="licencia"
-                            type="text"
-                            placeholder="Ej: 12345678"
-                            value={formData.licencia || ""}
-                            onChange={(e) => handleInputChange("licencia", e.target.value)}
-                            className={errors.licencia ? "border-destructive" : ""}
-                          />
-                          {errors.licencia && <p className="text-sm text-destructive">{errors.licencia}</p>}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="especialidad">Especialidad Médica</Label>
+                          <Label htmlFor="documentType">Tipo de Documento</Label>
                           <Select
-                            value={formData.especialidad || ""}
-                            onValueChange={(value) => handleInputChange("especialidad", value)}
+                            value={formData.documentType}
+                            onValueChange={(value) => handleInputChange("documentType", value)}
                           >
-                            <SelectTrigger className={errors.especialidad ? "border-destructive" : ""}>
-                              <SelectValue placeholder="Selecciona tu especialidad" />
+                            <SelectTrigger className={errors.documentType ? "border-destructive" : ""}>
+                              <SelectValue placeholder="Selecciona el tipo" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="medicina-general">Medicina General</SelectItem>
-                              <SelectItem value="cardiologia">Cardiología</SelectItem>
-                              <SelectItem value="dermatologia">Dermatología</SelectItem>
-                              <SelectItem value="neurologia">Neurología</SelectItem>
-                              <SelectItem value="pediatria">Pediatría</SelectItem>
-                              <SelectItem value="ginecologia">Ginecología</SelectItem>
-                              <SelectItem value="traumatologia">Traumatología</SelectItem>
-                              <SelectItem value="psiquiatria">Psiquiatría</SelectItem>
-                              <SelectItem value="oftalmologia">Oftalmología</SelectItem>
-                              <SelectItem value="otorrinolaringologia">Otorrinolaringología</SelectItem>
+                              <SelectItem value="cc">Cédula de Ciudadanía</SelectItem>
+                              <SelectItem value="ti">Tarjeta de Identidad</SelectItem>
+                              <SelectItem value="ce">Cédula de Extranjería</SelectItem>
+                              <SelectItem value="pasaporte">Pasaporte</SelectItem>
+                              <SelectItem value="rc">Registro Civil</SelectItem>
                             </SelectContent>
                           </Select>
-                          {errors.especialidad && <p className="text-sm text-destructive">{errors.especialidad}</p>}
+                          {errors.documentType && <p className="text-sm text-destructive">{errors.documentType}</p>}
                         </div>
-                      </div>
-                    </div>
-                  )}
 
-                  {formData.role === "paciente" && (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                        <FileText className="w-4 h-4" />
-                        Información Personal
-                      </div>
-
-                      <div className="grid gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="nombre">Nombre Completo</Label>
+                          <Label htmlFor="documentNumber">Número de Documento</Label>
                           <Input
-                            id="nombre"
+                            id="documentNumber"
                             type="text"
-                            placeholder="Nombres y apellidos completos"
-                            value={formData.nombre || ""}
-                            onChange={(e) => handleInputChange("nombre", e.target.value)}
-                            className={errors.nombre ? "border-destructive" : ""}
+                            placeholder="Número sin puntos ni espacios"
+                            value={formData.documentNumber}
+                            onChange={(e) => handleInputChange("documentNumber", e.target.value)}
+                            className={errors.documentNumber ? "border-destructive" : ""}
                           />
-                          {errors.nombre && <p className="text-sm text-destructive">{errors.nombre}</p>}
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="tipoDocumento">Tipo de Documento</Label>
-                            <Select
-                              value={formData.tipoDocumento || ""}
-                              onValueChange={(value) => handleInputChange("tipoDocumento", value)}
-                            >
-                              <SelectTrigger className={errors.tipoDocumento ? "border-destructive" : ""}>
-                                <SelectValue placeholder="Selecciona el tipo" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="cc">Cédula de Ciudadanía</SelectItem>
-                                <SelectItem value="ti">Tarjeta de Identidad</SelectItem>
-                                <SelectItem value="ce">Cédula de Extranjería</SelectItem>
-                                <SelectItem value="pasaporte">Pasaporte</SelectItem>
-                                <SelectItem value="rc">Registro Civil</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            {errors.tipoDocumento && <p className="text-sm text-destructive">{errors.tipoDocumento}</p>}
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="numeroDocumento">Número de Documento</Label>
-                            <Input
-                              id="numeroDocumento"
-                              type="text"
-                              placeholder="Número sin puntos ni espacios"
-                              value={formData.numeroDocumento || ""}
-                              onChange={(e) => handleInputChange("numeroDocumento", e.target.value)}
-                              className={errors.numeroDocumento ? "border-destructive" : ""}
-                            />
-                            {errors.numeroDocumento && (
-                              <p className="text-sm text-destructive">{errors.numeroDocumento}</p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="fechaNacimiento">Fecha de Nacimiento</Label>
-                          <Input
-                            id="fechaNacimiento"
-                            type="date"
-                            value={formData.fechaNacimiento || ""}
-                            onChange={(e) => handleInputChange("fechaNacimiento", e.target.value)}
-                            className={errors.fechaNacimiento ? "border-destructive" : ""}
-                          />
-                          {errors.fechaNacimiento && (
-                            <p className="text-sm text-destructive">{errors.fechaNacimiento}</p>
+                          {errors.documentNumber && (
+                            <p className="text-sm text-destructive">{errors.documentNumber}</p>
                           )}
                         </div>
                       </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="birthDate">Fecha de Nacimiento</Label>
+                        <Input
+                          id="birthDate"
+                          type="date"
+                          value={formData.birthDate}
+                          onChange={(e) => handleInputChange("birthDate", e.target.value)}
+                          className={errors.birthDate ? "border-destructive" : ""}
+                        />
+                        {errors.birthDate && (
+                          <p className="text-sm text-destructive">{errors.birthDate}</p>
+                        )}
+                      </div>
                     </div>
+                  </div>
+
+                  {/* Campos específicos por rol */}
+                  {formData.role === "doctor" && (
+                    <>
+                      <Separator />
+
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                          <Award className="w-4 h-4" />
+                          Información Profesional
+                        </div>
+
+                        <div className="grid gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="licencia">Número de Licencia Médica</Label>
+                            <Input
+                              id="licencia"
+                              type="text"
+                              placeholder="Ej: 12345678"
+                              value={formData.licencia || ""}
+                              onChange={(e) => handleInputChange("licencia", e.target.value)}
+                              className={errors.licencia ? "border-destructive" : ""}
+                            />
+                            {errors.licencia && <p className="text-sm text-destructive">{errors.licencia}</p>}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="especialidad">Especialidad Médica</Label>
+                            <Select
+                              value={formData.especialidad || ""}
+                              onValueChange={(value) => handleInputChange("especialidad", value)}
+                            >
+                              <SelectTrigger className={errors.especialidad ? "border-destructive" : ""}>
+                                <SelectValue placeholder="Selecciona tu especialidad" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="medicina-general">Medicina General</SelectItem>
+                                <SelectItem value="cardiologia">Cardiología</SelectItem>
+                                <SelectItem value="dermatologia">Dermatología</SelectItem>
+                                <SelectItem value="neurologia">Neurología</SelectItem>
+                                <SelectItem value="pediatria">Pediatría</SelectItem>
+                                <SelectItem value="ginecologia">Ginecología</SelectItem>
+                                <SelectItem value="traumatologia">Traumatología</SelectItem>
+                                <SelectItem value="psiquiatria">Psiquiatría</SelectItem>
+                                <SelectItem value="oftalmologia">Oftalmología</SelectItem>
+                                <SelectItem value="otorrinolaringologia">Otorrinolaringología</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {errors.especialidad && <p className="text-sm text-destructive">{errors.especialidad}</p>}
+                          </div>
+                        </div>
+                      </div>
+                    </>
                   )}
                 </>
               )}

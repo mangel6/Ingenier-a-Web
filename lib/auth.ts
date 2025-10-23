@@ -1,7 +1,9 @@
 // Sistema básico de autenticación
 interface User {
   id: number
+  backendId?: number
   usuario: string
+  email?: string
   password: string
   tipoUsuario: string
   nombre: string
@@ -15,6 +17,7 @@ interface User {
 
 interface SessionUser {
   id: number
+  backendId?: number
   usuario: string
   tipoUsuario: string
   nombre: string
@@ -28,13 +31,47 @@ class AuthSystem {
   }
 
   private loadUsers() {
-    // Intentar cargar usuarios desde localStorage
-    const savedUsers = localStorage.getItem("systemUsers")
+    if (typeof window !== 'undefined') {
+      // Intentar cargar usuarios desde localStorage
+      const savedUsers = localStorage.getItem("systemUsers")
 
-    if (savedUsers) {
-      this.users = JSON.parse(savedUsers)
+      if (savedUsers) {
+        this.users = JSON.parse(savedUsers)
+      } else {
+        // Usuarios predefinidos para pruebas iniciales
+        this.users = [
+          {
+            id: 1,
+            usuario: "admin@sistema.com",
+            password: "admin123",
+            tipoUsuario: "admin",
+            nombre: "Administrador Sistema",
+          },
+          {
+            id: 2,
+            usuario: "doctor@hospital.com",
+            password: "doctor123",
+            tipoUsuario: "doctor",
+            nombre: "Dr. María González",
+            licenciaMedica: "12345",
+            especialidad: "cardiologia",
+          },
+          {
+            id: 3,
+            usuario: "paciente@email.com",
+            password: "paciente123",
+            tipoUsuario: "paciente",
+            nombre: "Juan Pérez",
+            nombreCompleto: "Juan Carlos Pérez López",
+            tipoDocumento: "cc",
+            numeroDocumento: "12345678",
+            fechaNacimiento: "1990-05-15",
+          },
+        ]
+        this.saveUsers()
+      }
     } else {
-      // Usuarios predefinidos para pruebas iniciales
+      // On server-side, use default users
       this.users = [
         {
           id: 1,
@@ -64,62 +101,208 @@ class AuthSystem {
           fechaNacimiento: "1990-05-15",
         },
       ]
-      this.saveUsers()
     }
   }
 
   private saveUsers() {
-    localStorage.setItem("systemUsers", JSON.stringify(this.users))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("systemUsers", JSON.stringify(this.users))
+    }
   }
 
-  validateUser(usuario: string, password: string, tipoUsuario: string) {
+  async validateUser(usuario: string, password: string, tipoUsuario: string) {
     console.log("[v0] Validando usuario:", { usuario, tipoUsuario })
 
-    const user = this.users.find(
+    // First try to find user locally
+    const localUser = this.users.find(
       (u) =>
         (u.usuario.toLowerCase() === usuario.toLowerCase() || u.numeroDocumento === usuario) &&
         u.password === password &&
         u.tipoUsuario === tipoUsuario,
     )
 
-    console.log("[v0] Usuario encontrado:", user ? "SÍ" : "NO")
+    console.log("[v0] Usuario local encontrado:", localUser ? "SÍ" : "NO")
 
-    if (user) {
-      // Guardar sesión
-      const sessionData: SessionUser = {
-        id: user.id,
-        usuario: user.usuario,
-        tipoUsuario: user.tipoUsuario,
-        nombre: user.nombre,
+    if (localUser) {
+      // Try to get backendId via API
+      try {
+        console.log("[AUTH] Attempting to fetch all users from backend to find matching username")
+        const response = await fetch('http://localhost:8080/MedCloud/api/v1/users/', {
+          method: 'GET',
+          mode: 'cors',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': 'http://localhost:3000',
+            'Access-Control-Allow-Methods': 'GET',
+            'Access-Control-Allow-Headers': 'Content-Type'
+          }
+        })
+
+        if (response.ok) {
+          const users = await response.json()
+          console.log("[AUTH] Backend users array:", users)
+          const backendUser = users.find((u: any) => u.username === localUser.usuario)
+          if (backendUser) {
+            const backendId = backendUser.id
+            console.log("[AUTH] Found backend user with id:", backendId)
+
+            // Update local user with backendId if not present
+            if (!localUser.backendId) {
+              localUser.backendId = backendId
+              this.saveUsers()
+            }
+
+            // Guardar sesión with backendId
+            const sessionData: SessionUser = {
+              id: localUser.id,
+              backendId: backendId,
+              usuario: localUser.usuario,
+              tipoUsuario: localUser.tipoUsuario,
+              nombre: localUser.nombre,
+            }
+
+            console.log("[v0] Guardando sesión con backendId:", sessionData)
+            if (typeof window !== 'undefined') {
+              sessionStorage.setItem("currentUser", JSON.stringify(sessionData))
+            }
+
+            return { success: true, user: localUser }
+          } else {
+            console.log("[AUTH] User not found in backend, proceeding with local user")
+          }
+        } else {
+          console.log("[AUTH] Backend fetch failed, proceeding with local user")
+        }
+      } catch (error) {
+        console.error('[AUTH] Backend fetch error:', error)
       }
 
-      console.log("[v0] Guardando sesión:", sessionData)
-      sessionStorage.setItem("currentUser", JSON.stringify(sessionData))
+      // Fallback: save session without backendId
+      const sessionData: SessionUser = {
+        id: localUser.id,
+        backendId: localUser.backendId,
+        usuario: localUser.usuario,
+        tipoUsuario: localUser.tipoUsuario,
+        nombre: localUser.nombre,
+      }
 
-      return { success: true, user }
+      console.log("[v0] Guardando sesión (fallback):", sessionData)
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem("currentUser", JSON.stringify(sessionData))
+      }
+
+      return { success: true, user: localUser }
     }
 
     return { success: false, message: "Credenciales incorrectas o tipo de usuario no coincide" }
   }
 
-  registerUser(userData: Partial<User>) {
+  async registerUser(userData: Partial<User>): Promise<{ success: boolean; message: string }> {
+    console.log("[AUTH] registerUser called with:", userData)
     // Validar que el usuario no exista
     const existingUser = this.users.find((u) => u.usuario.toLowerCase() === userData.usuario?.toLowerCase())
 
     if (existingUser) {
+      console.log("[AUTH] User already exists")
       return { success: false, message: "El usuario ya existe" }
     }
 
     // Validar datos específicos
     const validation = this.validateUserData(userData)
     if (!validation.success) {
+      console.log("[AUTH] Validation failed:", validation.message)
       return validation
     }
+    console.log("[AUTH] Validation passed")
 
+    // Try API call
+    console.log("[AUTH] Attempting API call to backend")
+    try {
+      const roleMap = {
+        paciente: 'PATIENT',
+        doctor: 'DOCTOR',
+        admin: 'ADMIN'
+      }
+      const role = roleMap[userData.tipoUsuario as keyof typeof roleMap]
+      const payload: any = {
+        username: userData.usuario,
+        email: userData.email || userData.usuario,
+        password: userData.password,
+        role: role
+      }
+      console.log("[AUTH] Payload email field:", payload.email)
+
+      if (userData.tipoUsuario === 'paciente') {
+        payload.fullName = userData.nombreCompleto
+        payload.documentType = userData.tipoDocumento?.toUpperCase()
+        payload.documentNumber = userData.numeroDocumento
+        payload.birthDate = userData.fechaNacimiento
+      } else if (userData.tipoUsuario === 'doctor') {
+        payload.fullName = userData.nombreCompleto
+        payload.documentType = userData.tipoDocumento?.toUpperCase()
+        payload.documentNumber = userData.numeroDocumento
+        payload.birthDate = userData.fechaNacimiento
+        payload.specialty = userData.especialidad
+        payload.licenseNumber = userData.licenciaMedica
+      }
+
+      console.log("[AUTH] API payload:", payload)
+      console.log("[AUTH] Making fetch request to: http://localhost:8080/MedCloud/api/v1/users/")
+
+      const response = await fetch('http://localhost:8080/MedCloud/api/v1/users/', {
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': 'http://localhost:3000',
+          'Access-Control-Allow-Methods': 'POST',
+          'Access-Control-Allow-Headers': 'Content-Type'
+        },
+        body: JSON.stringify(payload)
+      })
+
+      console.log("[AUTH] API response status:", response.status)
+      console.log("[AUTH] API response ok:", response.ok)
+
+      if (response.ok) {
+        const data = await response.json()
+        console.log("[AUTH] API response data:", data)
+        const backendId = data.id
+        // Crear nuevo usuario
+        const newUser: User = {
+          id: this.users.length + 1,
+          backendId: backendId,
+          usuario: userData.usuario!,
+          email: userData.email,
+          password: userData.password!,
+          tipoUsuario: userData.tipoUsuario!,
+          nombre: userData.nombreCompleto || userData.usuario!.split("@")[0],
+          ...userData,
+        }
+
+        this.users.push(newUser)
+        this.saveUsers()
+
+        console.log("[AUTH] User registered successfully via API")
+        return { success: true, message: "Usuario registrado exitosamente" }
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        console.log("[AUTH] API error response:", errorData)
+        return { success: false, message: errorData.message || `Error del servidor: ${response.status}` }
+      }
+    } catch (error) {
+      console.error('[AUTH] API call failed, falling back to local registration', error)
+    }
+
+    // Fallback to local registration
+    console.log("[AUTH] Falling back to local registration")
     // Crear nuevo usuario
     const newUser: User = {
       id: this.users.length + 1,
       usuario: userData.usuario!,
+      email: userData.email,
       password: userData.password!,
       tipoUsuario: userData.tipoUsuario!,
       nombre: userData.nombreCompleto || userData.usuario!.split("@")[0],
@@ -129,13 +312,15 @@ class AuthSystem {
     this.users.push(newUser)
     this.saveUsers()
 
+    console.log("[AUTH] User registered locally")
     return { success: true, message: "Usuario registrado exitosamente" }
   }
 
-  private validateUserData(userData: Partial<User>) {
-    // Validar email
+  private validateUserData(userData: Partial<User>): { success: boolean; message: string } {
+    // Validar email (usar el email proporcionado o el usuario como fallback)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(userData.usuario!)) {
+    const emailToValidate = userData.email || userData.usuario
+    if (!emailRegex.test(emailToValidate!)) {
       return { success: false, message: "El formato del email no es válido" }
     }
 
@@ -179,16 +364,21 @@ class AuthSystem {
       }
     }
 
-    return { success: true }
+    return { success: true, message: "" }
   }
 
   getCurrentUser(): SessionUser | null {
-    const userSession = sessionStorage.getItem("currentUser")
-    return userSession ? JSON.parse(userSession) : null
+    if (typeof window !== 'undefined') {
+      const userSession = sessionStorage.getItem("currentUser")
+      return userSession ? JSON.parse(userSession) : null
+    }
+    return null
   }
 
   logout() {
-    sessionStorage.removeItem("currentUser")
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem("currentUser")
+    }
   }
 }
 

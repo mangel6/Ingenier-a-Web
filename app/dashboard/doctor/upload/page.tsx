@@ -45,9 +45,8 @@ export default function UploadPage() {
       router.push("/login")
       return
     }
-    // For now, use a placeholder UUID for the doctor ID
-    // In a real app, this would come from the authenticated user
-    setCurrentDoctorId("550e8400-e29b-41d4-a716-446655440000")
+    // Use backendId from session if available, otherwise fallback to placeholder
+    setCurrentDoctorId(user.backendId ? user.backendId.toString() : "550e8400-e29b-41d4-a716-446655440000")
   }, [router])
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
