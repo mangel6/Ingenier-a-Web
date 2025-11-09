@@ -31,13 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     let result
-    if (window.backendIntegration && window.backendIntegration.useRealBackend) {
-      console.log("[v0] Usando backend real")
-      result = await window.backendIntegration.loginUser(usuario, password, tipoUsuario)
-    } else {
-      console.log("[v0] Usando sistema local")
-      result = window.authSystem.validateUser(usuario, password, tipoUsuario)
-    }
+    // Always try to use the updated auth system first (which handles JWT)
+    console.log("[LOGIN] Using updated auth system with JWT support")
+    result = await window.authSystem.validateUser(usuario, password, tipoUsuario)
 
     console.log("[v0] Resultado de login:", result)
 
@@ -49,11 +45,8 @@ document.addEventListener("DOMContentLoaded", () => {
         case "paciente":
           window.location.href = "dashboard-paciente.html"
           break
-        case "doctor":
-          window.location.href = "dashboard-doctor.html"
-          break
-        case "admin":
-          window.location.href = "dashboard-admin.html"
+        case "eps":
+          window.location.href = "dashboard-eps.html"
           break
         default:
           window.location.href = "dashboard-paciente.html"
@@ -197,11 +190,8 @@ function showLoginForm() {
     case "paciente":
       window.location.href = "dashboard-paciente.html"
       break
-    case "doctor":
-      window.location.href = "dashboard-doctor.html"
-      break
-    case "admin":
-      window.location.href = "dashboard-admin.html"
+    case "eps":
+      window.location.href = "dashboard-eps.html"
       break
     default:
       window.location.href = "dashboard-paciente.html"

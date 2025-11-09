@@ -42,22 +42,6 @@ class AuthSystem {
         this.users = [
           {
             id: 1,
-            usuario: "admin@sistema.com",
-            password: "admin123",
-            tipoUsuario: "admin",
-            nombre: "Administrador Sistema",
-          },
-          {
-            id: 2,
-            usuario: "doctor@hospital.com",
-            password: "doctor123",
-            tipoUsuario: "doctor",
-            nombre: "Dr. María González",
-            licenciaMedica: "12345",
-            especialidad: "cardiologia",
-          },
-          {
-            id: 3,
             usuario: "paciente@email.com",
             password: "paciente123",
             tipoUsuario: "paciente",
@@ -67,6 +51,13 @@ class AuthSystem {
             numeroDocumento: "12345678",
             fechaNacimiento: "1990-05-15",
           },
+          {
+            id: 2,
+            usuario: "eps@empresa.com",
+            password: "eps123",
+            tipoUsuario: "eps",
+            nombre: "EPS Salud Total",
+          },
         ]
         this.saveUsers()
       }
@@ -75,22 +66,6 @@ class AuthSystem {
       this.users = [
         {
           id: 1,
-          usuario: "admin@sistema.com",
-          password: "admin123",
-          tipoUsuario: "admin",
-          nombre: "Administrador Sistema",
-        },
-        {
-          id: 2,
-          usuario: "doctor@hospital.com",
-          password: "doctor123",
-          tipoUsuario: "doctor",
-          nombre: "Dr. María González",
-          licenciaMedica: "12345",
-          especialidad: "cardiologia",
-        },
-        {
-          id: 3,
           usuario: "paciente@email.com",
           password: "paciente123",
           tipoUsuario: "paciente",
@@ -99,6 +74,13 @@ class AuthSystem {
           tipoDocumento: "cc",
           numeroDocumento: "12345678",
           fechaNacimiento: "1990-05-15",
+        },
+        {
+          id: 2,
+          usuario: "eps@empresa.com",
+          password: "eps123",
+          tipoUsuario: "eps",
+          nombre: "EPS Salud Total",
         },
       ]
     }
@@ -111,9 +93,101 @@ class AuthSystem {
   }
 
   async validateUser(usuario: string, password: string, tipoUsuario: string) {
-    console.log("[v0] Validando usuario:", { usuario, tipoUsuario })
+    console.log("[AUTH] Validating user:", { usuario, tipoUsuario })
 
-    // First try to find user locally
+    // Handle patient login differently - no password required
+    if (tipoUsuario === 'paciente') {
+      console.log("[AUTH] Attempting patient login via /auth/patient-login")
+      try {
+        const patientLoginResponse = await fetch(`http://localhost:8080/MedCloud/api/v1/auth/patient-login?documentNumber=${encodeURIComponent(usuario)}`, {
+          method: 'POST',
+          mode: 'cors',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': 'http://localhost:3000',
+            'Access-Control-Allow-Methods': 'POST',
+            'Access-Control-Allow-Headers': 'Content-Type'
+          }
+        })
+
+        if (patientLoginResponse.ok) {
+          const patientData = await patientLoginResponse.json()
+          console.log("[AUTH] Patient login successful:", patientData)
+
+          // Create user from patient response data
+          const user: User = {
+            id: this.users.length + 1,
+            backendId: 1, // Temporary ID
+            usuario: patientData.documentNumber,
+            email: patientData.documentNumber, // Use document as email for patients
+            password: '', // No password for patients
+            tipoUsuario: 'paciente',
+            nombre: patientData.fullName,
+            nombreCompleto: patientData.fullName,
+            numeroDocumento: patientData.documentNumber,
+          }
+
+          // Check if user already exists locally, update or add
+          const existingUserIndex = this.users.findIndex(u => u.numeroDocumento === patientData.documentNumber)
+          if (existingUserIndex >= 0) {
+            this.users[existingUserIndex] = user
+          } else {
+            this.users.push(user)
+          }
+          this.saveUsers()
+
+          // Save session
+          const sessionData: SessionUser = {
+            id: user.id,
+            backendId: user.backendId,
+            usuario: user.usuario,
+            tipoUsuario: user.tipoUsuario,
+            nombre: user.nombre,
+          }
+
+          console.log("[AUTH] Saving patient session:", sessionData)
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem("currentUser", JSON.stringify(sessionData))
+            // Clear any JWT token for patients
+            localStorage.removeItem("jwtToken")
+            localStorage.removeItem("userEmail")
+            localStorage.removeItem("userRole")
+          }
+
+          return { success: true, user: user }
+        } else {
+          const errorData = await patientLoginResponse.json().catch(() => ({}))
+          console.log("[AUTH] Patient login failed:", errorData)
+          return { success: false, message: errorData.message || "Paciente no encontrado" }
+        }
+      } catch (error) {
+        console.error('[AUTH] Patient authentication error:', error)
+        // Fallback to local patient authentication
+        const localPatient = this.users.find(
+          (u) => u.numeroDocumento === usuario && u.tipoUsuario === 'paciente'
+        )
+        if (localPatient) {
+          console.log("[AUTH] Falling back to local patient authentication")
+          const sessionData: SessionUser = {
+            id: localPatient.id,
+            backendId: localPatient.backendId,
+            usuario: localPatient.usuario,
+            tipoUsuario: localPatient.tipoUsuario,
+            nombre: localPatient.nombre,
+          }
+
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem("currentUser", JSON.stringify(sessionData))
+          }
+
+          return { success: true, user: localPatient }
+        }
+      }
+    }
+
+    // Handle EPS login with password and JWT
+    // First try to find user locally for offline access
     const localUser = this.users.find(
       (u) =>
         (u.usuario.toLowerCase() === usuario.toLowerCase() || u.numeroDocumento === usuario) &&
@@ -121,176 +195,109 @@ class AuthSystem {
         u.tipoUsuario === tipoUsuario,
     )
 
-    console.log("[v0] Usuario local encontrado:", localUser ? "SÍ" : "NO")
+    console.log("[AUTH] Local user found:", localUser ? "YES" : "NO")
 
-    if (localUser) {
-      // Try to get backendId via API
-      try {
-        console.log("[AUTH] Attempting to fetch all users from backend to find matching username")
-        const response = await fetch('http://localhost:8080/MedCloud/api/v1/users/', {
-          method: 'GET',
-          mode: 'cors',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': 'http://localhost:3000',
-            'Access-Control-Allow-Methods': 'GET',
-            'Access-Control-Allow-Headers': 'Content-Type'
-          }
-        })
-
-        if (response.ok) {
-          const users = await response.json()
-          console.log("[AUTH] Backend users array:", users)
-          const backendUser = users.find((u: any) => u.username === localUser.usuario)
-          if (backendUser) {
-            const backendId = backendUser.id
-            console.log("[AUTH] Found backend user with id:", backendId)
-
-            // Update local user with backendId if not present
-            if (!localUser.backendId) {
-              localUser.backendId = backendId
-              this.saveUsers()
-            }
-
-            // Guardar sesión with backendId
-            const sessionData: SessionUser = {
-              id: localUser.id,
-              backendId: backendId,
-              usuario: localUser.usuario,
-              tipoUsuario: localUser.tipoUsuario,
-              nombre: localUser.nombre,
-            }
-
-            console.log("[v0] Guardando sesión con backendId:", sessionData)
-            if (typeof window !== 'undefined') {
-              sessionStorage.setItem("currentUser", JSON.stringify(sessionData))
-            }
-
-            return { success: true, user: localUser }
-          } else {
-            console.log("[AUTH] User not found in backend, proceeding with local user")
-          }
-        } else {
-          console.log("[AUTH] Backend fetch failed, proceeding with local user")
-        }
-      } catch (error) {
-        console.error('[AUTH] Backend fetch error:', error)
-      }
-
-      // Fallback: save session without backendId
-      const sessionData: SessionUser = {
-        id: localUser.id,
-        backendId: localUser.backendId,
-        usuario: localUser.usuario,
-        tipoUsuario: localUser.tipoUsuario,
-        nombre: localUser.nombre,
-      }
-
-      console.log("[v0] Guardando sesión (fallback):", sessionData)
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem("currentUser", JSON.stringify(sessionData))
-      }
-
-      return { success: true, user: localUser }
-    }
-
-    // If no local user found, try to authenticate against backend directly
-    console.log("[AUTH] No local user found, attempting backend authentication")
+    // Try backend authentication first
     try {
-      console.log("[AUTH] Attempting to fetch all users from backend for authentication")
-      const response = await fetch('http://localhost:8080/MedCloud/api/v1/users/', {
-        method: 'GET',
+      console.log("[AUTH] Attempting backend login via /auth/login")
+      const loginResponse = await fetch('http://localhost:8080/MedCloud/api/v1/auth/login', {
+        method: 'POST',
         mode: 'cors',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': 'http://localhost:3000',
-          'Access-Control-Allow-Methods': 'GET',
+          'Access-Control-Allow-Methods': 'POST',
           'Access-Control-Allow-Headers': 'Content-Type'
-        }
-      })
-
-      if (response.ok) {
-        const users = await response.json()
-        console.log("[AUTH] Backend users array for auth:", users)
-
-        // Find user by username/email and check password (assuming backend stores plain text for now)
-        console.log("[AUTH] Searching for user with criteria:", {
-          inputUsuario: usuario,
-          inputTipoUsuario: tipoUsuario,
+        },
+        body: JSON.stringify({
+          identifier: usuario,
           password: password
         })
+      })
 
-        const backendUser = users.find((u: any) => {
-          const usernameMatch = u.username?.toLowerCase() === usuario.toLowerCase()
-          const emailMatch = u.email?.toLowerCase() === usuario.toLowerCase()
-          // For now, only check username/email match as requested
-          // TODO: Implement proper password and role checking once backend provides correct data
-          const passwordMatch = true // Temporarily skip password check
-          const roleMatch = true // Temporarily allow any role
+      if (loginResponse.ok) {
+        const loginData = await loginResponse.json()
+        console.log("[AUTH] Backend login successful:", loginData)
 
-          console.log("[AUTH] Checking user:", u.username, {
-            usernameMatch,
-            emailMatch,
-            passwordMatch,
-            roleMatch,
-            userRole: u.role,
-            userRoles: u.roles
-          })
-
-          return (usernameMatch || emailMatch) && passwordMatch && roleMatch
-        })
-
-        if (backendUser) {
-          console.log("[AUTH] Backend authentication successful for user:", backendUser.username)
-
-          // Create local user entry for future logins
-          const newLocalUser: User = {
-            id: this.users.length + 1,
-            backendId: backendUser.id,
-            usuario: backendUser.username || backendUser.email,
-            email: backendUser.email,
-            password: backendUser.password, // Store password locally for future offline access
-            tipoUsuario: tipoUsuario,
-            nombre: backendUser.fullName || backendUser.username?.split('@')[0] || 'Usuario',
-            nombreCompleto: backendUser.fullName,
-            tipoDocumento: backendUser.documentType,
-            numeroDocumento: backendUser.documentNumber,
-            fechaNacimiento: backendUser.birthDate,
-            licenciaMedica: backendUser.licenseNumber,
-            especialidad: backendUser.specialty,
-          }
-
-          this.users.push(newLocalUser)
-          this.saveUsers()
-
-          // Save session
-          const sessionData: SessionUser = {
-            id: newLocalUser.id,
-            backendId: backendUser.id,
-            usuario: newLocalUser.usuario,
-            tipoUsuario: newLocalUser.tipoUsuario,
-            nombre: newLocalUser.nombre,
-          }
-
-          console.log("[v0] Guardando sesión para usuario backend:", sessionData)
-          if (typeof window !== 'undefined') {
-            sessionStorage.setItem("currentUser", JSON.stringify(sessionData))
-          }
-
-          return { success: true, user: newLocalUser }
-        } else {
-          console.log("[AUTH] No matching user found in backend")
+        // Store JWT token and user info
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("jwtToken", loginData.token)
+          localStorage.setItem("userEmail", loginData.email)
+          localStorage.setItem("userRole", loginData.role)
         }
+
+        // Map backend role to frontend user type
+        const roleMapping: { [key: string]: string } = {
+          'PACIENTE': 'paciente',
+          'EPS': 'eps'
+        }
+
+        const mappedRole = roleMapping[loginData.role] || loginData.role.toLowerCase().replace("role_", "")
+
+        // Create user from login response data
+        const user: User = {
+          id: this.users.length + 1,
+          backendId: 1, // Temporary ID
+          usuario: loginData.email,
+          email: loginData.email,
+          password: password, // Store for offline access
+          tipoUsuario: mappedRole,
+          nombre: loginData.email.split('@')[0] || 'Usuario',
+          nombreCompleto: loginData.email.split('@')[0] || 'Usuario',
+        }
+
+        // Check if user already exists locally, update or add
+        const existingUserIndex = this.users.findIndex(u => u.email === loginData.email)
+        if (existingUserIndex >= 0) {
+          this.users[existingUserIndex] = user
+        } else {
+          this.users.push(user)
+        }
+        this.saveUsers()
+
+        // Save session
+        const sessionData: SessionUser = {
+          id: user.id,
+          backendId: user.backendId,
+          usuario: user.usuario,
+          tipoUsuario: user.tipoUsuario,
+          nombre: user.nombre,
+        }
+
+        console.log("[AUTH] Saving session from login data:", sessionData)
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem("currentUser", JSON.stringify(sessionData))
+        }
+
+        return { success: true, user: user }
       } else {
-        console.log("[AUTH] Backend fetch failed for authentication")
+        const errorData = await loginResponse.json().catch(() => ({}))
+        console.log("[AUTH] Backend login failed:", errorData)
+        return { success: false, message: errorData.message || "Credenciales incorrectas" }
       }
     } catch (error) {
       console.error('[AUTH] Backend authentication error:', error)
+      // Fallback to local authentication if backend is unavailable
+      if (localUser) {
+        console.log("[AUTH] Falling back to local authentication")
+        const sessionData: SessionUser = {
+          id: localUser.id,
+          backendId: localUser.backendId,
+          usuario: localUser.usuario,
+          tipoUsuario: localUser.tipoUsuario,
+          nombre: localUser.nombre,
+        }
+
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem("currentUser", JSON.stringify(sessionData))
+        }
+
+        return { success: true, user: localUser }
+      }
     }
 
-    return { success: false, message: "Credenciales incorrectas o tipo de usuario no coincide" }
+    return { success: false, message: "Credenciales incorrectas o error de conexión" }
   }
 
   async registerUser(userData: Partial<User>): Promise<{ success: boolean; message: string }> {
@@ -315,9 +322,8 @@ class AuthSystem {
     console.log("[AUTH] Attempting API call to backend")
     try {
       const roleMap = {
-        paciente: 'PATIENT',
-        doctor: 'DOCTOR',
-        admin: 'ADMIN'
+        paciente: 'PACIENTE',
+        eps: 'EPS'
       }
       const role = roleMap[userData.tipoUsuario as keyof typeof roleMap]
       const payload: any = {
@@ -333,13 +339,8 @@ class AuthSystem {
         payload.documentType = userData.tipoDocumento?.toUpperCase()
         payload.documentNumber = userData.numeroDocumento
         payload.birthDate = userData.fechaNacimiento
-      } else if (userData.tipoUsuario === 'doctor') {
-        payload.fullName = userData.nombreCompleto
-        payload.documentType = userData.tipoDocumento?.toUpperCase()
-        payload.documentNumber = userData.numeroDocumento
-        payload.birthDate = userData.fechaNacimiento
-        payload.specialty = userData.especialidad
-        payload.licenseNumber = userData.licenciaMedica
+      } else if (userData.tipoUsuario === 'eps') {
+        payload.fullName = userData.nombreCompleto || userData.nombre
       }
 
       console.log("[AUTH] API payload:", payload)
@@ -357,6 +358,8 @@ class AuthSystem {
         },
         body: JSON.stringify(payload)
       })
+
+      // Note: Registration doesn't require JWT token as it's a public endpoint
 
       console.log("[AUTH] API response status:", response.status)
       console.log("[AUTH] API response ok:", response.ok)
@@ -449,14 +452,8 @@ class AuthSystem {
       }
     }
 
-    if (userData.tipoUsuario === "doctor") {
-      if (!userData.licenciaMedica || userData.licenciaMedica.length < 4) {
-        return { success: false, message: "La licencia médica debe tener al menos 4 caracteres" }
-      }
-
-      if (!userData.especialidad) {
-        return { success: false, message: "La especialidad es requerida" }
-      }
+    if (userData.tipoUsuario === "eps") {
+      // EPS no requiere validaciones adicionales específicas
     }
 
     return { success: true, message: "" }

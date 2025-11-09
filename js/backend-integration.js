@@ -1,9 +1,9 @@
 // Configuración para integración con backend real
 class BackendIntegration {
   constructor() {
-    this.baseURL = "/api" // CAMBIAR POR LA URL REAL
+    this.baseURL = window.CONFIG ? window.CONFIG.getCurrentConfig().backendURL : "/api"
 
-    this.useRealBackend = true // Cambiar a true cuando el backend esté listo
+    this.useRealBackend = window.CONFIG ? window.CONFIG.getCurrentConfig().useRealBackend : true
   }
 
   // Método para registrar usuario en el backend
@@ -53,7 +53,7 @@ class BackendIntegration {
     }
 
     try {
-      const response = await fetch(`${this.baseURL}/usuarios/login`, {
+      const response = await fetch(`${this.baseURL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -61,26 +61,29 @@ class BackendIntegration {
         body: JSON.stringify({
           email: usuario,
           password: password,
-          tipoUsuario: tipoUsuario.toUpperCase(),
         }),
       })
 
       const result = await response.json()
 
       if (response.ok) {
-        // Guardar sesión
+        // Almacenar JWT token en localStorage
+        localStorage.setItem("jwtToken", result.token)
+        localStorage.setItem("userEmail", result.email)
+        localStorage.setItem("userRole", result.role)
+
+        // Guardar información de usuario en sessionStorage para compatibilidad
         sessionStorage.setItem(
           "currentUser",
           JSON.stringify({
-            id: result.user.id,
-            usuario: result.user.email,
-            tipoUsuario: result.user.tipoUsuario,
-            nombre: result.user.nombre,
-            token: result.token, // Si el backend usa JWT
+            usuario: result.email,
+            tipoUsuario: result.role.toLowerCase().replace("role_", ""),
+            nombre: result.email, // Usar email como nombre temporal
+            token: result.token,
           }),
         )
 
-        return { success: true, user: result.user }
+        return { success: true, user: { email: result.email, role: result.role } }
       } else {
         return { success: false, message: result.message || "Credenciales incorrectas" }
       }
@@ -99,11 +102,19 @@ class BackendIntegration {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/MedCloud/api/v1/clinical-documents`, {
+      const headers = {
+        "Content-Type": "application/json",
+      }
+
+      // Agregar token JWT si está disponible
+      const token = localStorage.getItem("jwtToken")
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`
+      }
+
+      const response = await fetch(`${this.baseURL}/v1/clinical-documents`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: headers,
         body: JSON.stringify(documentData),
       })
 
@@ -143,11 +154,19 @@ class BackendIntegration {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/MedCloud/api/v1/clinical-documents?patientId=${patientId}`, {
+      const headers = {
+        "Content-Type": "application/json",
+      }
+
+      // Agregar token JWT si está disponible
+      const token = localStorage.getItem("jwtToken")
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`
+      }
+
+      const response = await fetch(`${this.baseURL}/v1/clinical-documents?patientId=${patientId}`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: headers,
       })
 
       const result = await response.json()
@@ -186,11 +205,19 @@ class BackendIntegration {
     }
 
     try {
+      const headers = {
+        "Content-Type": "application/json",
+      }
+
+      // Agregar token JWT si está disponible
+      const token = localStorage.getItem("jwtToken")
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`
+      }
+
       const response = await fetch(`${this.baseURL}/v1/clinical-documents/patient/${backendId}`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: headers,
       })
 
       const result = await response.json()

@@ -8,7 +8,8 @@ const CONFIG = {
 
   PRODUCTION: {
     useRealBackend: true,
-    backendURL: "http://localhost:8080/api",
+    backendURL: process.env.REACT_APP_BACKEND_URL || "http://localhost:8080/MedCloud/api/v1",
+    jwtSecret: process.env.JWT_SECRET || "defaultSecretKeyThatShouldBeAtLeast256BitsLongForHS256Algorithm",
     debugMode: false,
   },
 

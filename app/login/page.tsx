@@ -9,10 +9,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Eye, EyeOff, Shield, User, Stethoscope, UserCog, Building } from "lucide-react"
+import { ArrowLeft, Eye, EyeOff, Shield, User, Building } from "lucide-react"
 import { authSystem } from "@/lib/auth"
 
-type UserType = "paciente" | "doctor" | "admin" | "eps" | ""
+type UserType = "paciente" | "eps" | ""
 
 interface LoginData {
   userType: UserType
@@ -48,10 +48,11 @@ export default function LoginPage() {
     }
 
     if (!loginData.username.trim()) {
-      newErrors.username = "El usuario es requerido"
+      newErrors.username = loginData.userType === "paciente" ? "El número de documento es requerido" : "El usuario es requerido"
     }
 
-    if (!loginData.password) {
+    // Only require password for EPS users
+    if (loginData.userType === "eps" && !loginData.password) {
       newErrors.password = "La contraseña es requerida"
     }
 
@@ -72,20 +73,25 @@ export default function LoginPage() {
       const result = await authSystem.validateUser(loginData.username.toLowerCase(), loginData.password, loginData.userType)
 
       if (result.success) {
-        // Redirigir según el tipo de usuario
-        switch (loginData.userType) {
+        // Redirigir según el tipo de usuario del resultado de autenticación
+        const actualUserType = result.user?.tipoUsuario || loginData.userType
+        switch (actualUserType) {
           case "paciente":
             router.push("/dashboard/patient")
-            break
-          case "doctor":
-            router.push("/dashboard/doctor")
-            break
-          case "admin":
-            router.push("/dashboard/admin")
             break
           case "eps":
             router.push("/dashboard/eps")
             break
+          default:
+            // Fallback al tipo seleccionado si no se reconoce el role del backend
+            switch (loginData.userType) {
+              case "paciente":
+                router.push("/dashboard/patient")
+                break
+              case "eps":
+                router.push("/dashboard/eps")
+                break
+            }
         }
       } else {
         setErrors({ general: result.message || "Credenciales incorrectas" })
@@ -102,10 +108,6 @@ export default function LoginPage() {
     switch (type) {
       case "paciente":
         return <User className="w-4 h-4" />
-      case "doctor":
-        return <Stethoscope className="w-4 h-4" />
-      case "admin":
-        return <UserCog className="w-4 h-4" />
       case "eps":
         return <Building className="w-4 h-4" />
       default:
@@ -117,10 +119,6 @@ export default function LoginPage() {
     switch (type) {
       case "paciente":
         return "Paciente"
-      case "doctor":
-        return "Médico"
-      case "admin":
-        return "Administrador"
       case "eps":
         return "EPS/Entidad"
       default:
@@ -167,18 +165,6 @@ export default function LoginPage() {
                         Paciente
                       </div>
                     </SelectItem>
-                    <SelectItem value="doctor">
-                      <div className="flex items-center gap-2">
-                        <Stethoscope className="w-4 h-4" />
-                        Médico
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="admin">
-                      <div className="flex items-center gap-2">
-                        <UserCog className="w-4 h-4" />
-                        Administrador
-                      </div>
-                    </SelectItem>
                     <SelectItem value="eps">
                       <div className="flex items-center gap-2">
                         <Building className="w-4 h-4" />
@@ -192,11 +178,13 @@ export default function LoginPage() {
 
               {/* Usuario */}
               <div className="space-y-2">
-                <Label htmlFor="username">Usuario</Label>
+                <Label htmlFor="username">
+                  {loginData.userType === "paciente" ? "Número de documento" : "Usuario"}
+                </Label>
                 <Input
                   id="username"
                   type="text"
-                  placeholder="Número de documento o usuario"
+                  placeholder={loginData.userType === "paciente" ? "Ingresa tu número de documento" : "Ingresa tu usuario"}
                   value={loginData.username}
                   onChange={(e) => handleInputChange("username", e.target.value)}
                   className={errors.username ? "border-destructive" : ""}
@@ -204,37 +192,42 @@ export default function LoginPage() {
                 {errors.username && <p className="text-sm text-destructive">{errors.username}</p>}
               </div>
 
-              {/* Contraseña */}
-              <div className="space-y-2">
-                <Label htmlFor="password">Contraseña</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Ingresa tu contraseña"
-                    value={loginData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
-                    className={errors.password ? "border-destructive pr-10" : "pr-10"}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </Button>
+              {/* Contraseña - Solo mostrar para EPS */}
+              {loginData.userType === "eps" && (
+                <div className="space-y-2">
+                  <Label htmlFor="password">Contraseña</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Ingresa tu contraseña"
+                      value={loginData.password}
+                      onChange={(e) => handleInputChange("password", e.target.value)}
+                      className={errors.password ? "border-destructive pr-10" : "pr-10"}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                  {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
                 </div>
-                {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-              </div>
+              )}
 
               {errors.general && <p className="text-sm text-destructive">{errors.general}</p>}
 
               {/* Botón de envío */}
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Iniciando sesión..." : "Iniciar Sesión"}
+                {isSubmitting
+                  ? (loginData.userType === "paciente" ? "Consultando..." : "Iniciando sesión...")
+                  : (loginData.userType === "paciente" ? "Consultar" : "Iniciar Sesión")
+                }
               </Button>
             </form>
 
