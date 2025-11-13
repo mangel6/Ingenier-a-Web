@@ -26,15 +26,11 @@ declare global {
 // Validation schema
 const uploadSchema = z.object({
   patientDocumentNumber: z.string().min(1, "La cédula del paciente es requerida"),
-  patientFullName: z.string().min(1, "El nombre completo del paciente es requerido").max(120, "El nombre no puede exceder los 120 caracteres"),
-  patientBirthDate: z.string().min(1, "La fecha de nacimiento es requerida"),
   patientTreatment: z.string().max(1000, "El tratamiento no puede exceder los 1000 caracteres").optional(),
   patientDiagnosisInProgress: z.boolean({
     required_error: "El estado del diagnóstico es requerido",
   }),
-  doctorName: z.string().min(1, "El nombre del médico es requerido").max(120, "El nombre del médico no puede exceder los 120 caracteres"),
   doctorDocumentNumber: z.string().min(1, "La cédula del médico es requerida"),
-  doctorSpecialty: z.string().max(60, "La especialidad no puede exceder los 60 caracteres").optional(),
   kind: z.enum(["PDF", "IMAGE", "LAB_REPORT", "SCAN", "OTHER"], {
     required_error: "Por favor seleccione un tipo de archivo",
   }),
@@ -57,13 +53,9 @@ export default function EpsDashboard() {
     resolver: zodResolver(uploadSchema),
     defaultValues: {
       patientDocumentNumber: "",
-      patientFullName: "",
-      patientBirthDate: "",
       patientTreatment: "",
       patientDiagnosisInProgress: false,
-      doctorName: "",
       doctorDocumentNumber: "",
-      doctorSpecialty: "",
       kind: undefined,
     },
   })
@@ -99,9 +91,15 @@ export default function EpsDashboard() {
         if (currentEps?.id) {
           setCurrentEpsId(currentEps.id)
         }
+      } else {
+        console.error('Failed to fetch EPS info:', response.status, await response.text())
+        // Set fallback info
+        setEpsInfo({ fullName: 'EPS Salud Total', id: null })
       }
     } catch (error) {
       console.error('Error fetching EPS info:', error)
+      // Set fallback info on error
+      setEpsInfo({ fullName: 'EPS Salud Total', id: null })
     }
   }
 
@@ -138,14 +136,10 @@ export default function EpsDashboard() {
 
     const payload = {
       patientDocumentNumber: data.patientDocumentNumber,
-      patientFullName: data.patientFullName,
-      patientBirthDate: data.patientBirthDate,
       patientTreatment: data.patientTreatment || "",
       patientDiagnosisInProgress: data.patientDiagnosisInProgress,
       uploadedByEpsId: currentEpsId,
-      doctorName: data.doctorName,
       doctorDocumentNumber: data.doctorDocumentNumber,
-      doctorSpecialty: data.doctorSpecialty || "",
       kind: data.kind,
       filename: file.name,
       fileContentBase64,
@@ -198,7 +192,7 @@ export default function EpsDashboard() {
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-3xl font-bold">Bienvenido al Panel EPS</h1>
-            <p className="text-muted-foreground">{epsInfo?.fullName || "EPS Salud Total"}</p>
+            <p className="text-muted-foreground">{epsInfo?.fullName || epsInfo?.username || "EPS Salud Total"}</p>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" onClick={handleLogout}>
@@ -252,7 +246,7 @@ export default function EpsDashboard() {
               <div>
                 <label className="text-sm font-medium">Nombre de la EPS</label>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {epsInfo?.fullName || "Cargando..."}
+                  {epsInfo?.fullName || epsInfo?.username || "EPS Salud Total"}
                 </p>
               </div>
               <div>
@@ -297,41 +291,6 @@ export default function EpsDashboard() {
                   )}
                 />
 
-                {/* Patient Full Name */}
-                <FormField
-                  control={form.control}
-                  name="patientFullName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nombre Completo del Paciente</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Ingrese el nombre completo del paciente"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Patient Birth Date */}
-                <FormField
-                  control={form.control}
-                  name="patientBirthDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Fecha de Nacimiento del Paciente</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="date"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 {/* Patient Treatment */}
                 <FormField
@@ -374,24 +333,6 @@ export default function EpsDashboard() {
                   )}
                 />
 
-                {/* Doctor Name */}
-                <FormField
-                  control={form.control}
-                  name="doctorName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nombre del Médico</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Ingrese el nombre del médico"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 {/* Doctor Document Number */}
                 <FormField
                   control={form.control}
@@ -410,23 +351,6 @@ export default function EpsDashboard() {
                   )}
                 />
 
-                {/* Doctor Specialty */}
-                <FormField
-                  control={form.control}
-                  name="doctorSpecialty"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Especialidad del Médico (Opcional)</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Ingrese la especialidad del médico"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 {/* File Type */}
                 <FormField

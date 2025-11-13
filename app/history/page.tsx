@@ -12,6 +12,7 @@ interface ClinicalDocument {
   id: number
   patientId: string
   uploadedByUserId: string
+  epsName?: string
   kind: string
   filename: string
   fileContentBase64: string
@@ -211,7 +212,7 @@ export default function PatientHistoryPage() {
                               </span>
                             </div>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {formatDate(document.uploadedAt)}
+                              Subido por: {document.epsName || 'EPS'} • {formatDate(document.uploadedAt)}
                             </p>
                           </div>
                           <div className="flex gap-2">
