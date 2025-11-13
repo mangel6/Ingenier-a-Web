@@ -74,10 +74,7 @@ export default function EpsDashboard() {
       router.push("/login")
       return
     }
-    // Use backendId from session if available, otherwise fallback to placeholder
-    setCurrentEpsId(user.backendId ? user.backendId.toString() : "550e8400-e29b-41d4-a716-446655440001")
-
-    // Fetch EPS information
+    // Fetch EPS information first to get the correct ID
     fetchEpsInfo()
   }, [router])
 
@@ -98,6 +95,10 @@ export default function EpsDashboard() {
         const currentUser = authSystem.getCurrentUser()
         const currentEps = epsList.find((eps: any) => eps.email === currentUser?.usuario)
         setEpsInfo(currentEps)
+        // Set the correct EPS ID from the backend
+        if (currentEps?.id) {
+          setCurrentEpsId(currentEps.id)
+        }
       }
     } catch (error) {
       console.error('Error fetching EPS info:', error)

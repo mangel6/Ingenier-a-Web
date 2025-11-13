@@ -102,10 +102,12 @@ class BackendIntegration {
     }
 
     try {
+      const token = localStorage.getItem("jwtToken")
       const response = await fetch(`${this.baseURL}/v1/clinical-documents`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": token ? `Bearer ${token}` : "",
         },
         body: JSON.stringify(documentData),
       })
