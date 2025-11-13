@@ -27,6 +27,7 @@ export default function PatientHistoryPage() {
   const [selectedDocument, setSelectedDocument] = useState<ClinicalDocument | null>(null)
   const [pdfData, setPdfData] = useState<string | null>(null)
   const [pdfLoading, setPdfLoading] = useState(false)
+  const [isLargeFile, setIsLargeFile] = useState(false)
 
   useEffect(() => {
     const user = authSystem.getCurrentUser()
@@ -69,8 +70,17 @@ export default function PatientHistoryPage() {
     setSelectedDocument(document)
     setPdfLoading(true)
     setPdfData(null)
+    setIsLargeFile(false)
 
     try {
+      // Check if file is too large for preview (>5MB)
+      const maxPreviewSize = 5 * 1024 * 1024 // 5MB
+      if (document.sizeBytes > maxPreviewSize) {
+        setIsLargeFile(true)
+        setPdfLoading(false)
+        return
+      }
+
       // Use fileContentBase64 directly from the document object
       if (document.fileContentBase64) {
         // Create data URL for iframe
@@ -257,6 +267,20 @@ export default function PatientHistoryPage() {
                     <div className="text-center">
                       <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
                       <p>Cargando documento...</p>
+                    </div>
+                  </div>
+                ) : isLargeFile ? (
+                  <div className="flex items-center justify-center h-96">
+                    <div className="text-center">
+                      <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground mb-4">Este archivo es demasiado grande para previsualizar en el navegador</p>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleDownloadDocument(selectedDocument)}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Descargar archivo completo
+                      </Button>
                     </div>
                   </div>
                 ) : pdfData ? (

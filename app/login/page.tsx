@@ -77,7 +77,7 @@ export default function LoginPage() {
         const actualUserType = result.user?.tipoUsuario || loginData.userType
         switch (actualUserType) {
           case "paciente":
-            router.push("/dashboard/patient/history")
+            router.push("/history")
             break
           case "eps":
             router.push("/dashboard/eps")
@@ -86,7 +86,7 @@ export default function LoginPage() {
             // Fallback al tipo seleccionado si no se reconoce el role del backend
             switch (loginData.userType) {
               case "paciente":
-                router.push("/dashboard/patient/history")
+                router.push("/history")
                 break
               case "eps":
                 router.push("/dashboard/eps")

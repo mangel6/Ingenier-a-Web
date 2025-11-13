@@ -118,7 +118,7 @@ class AuthSystem {
           // Create user from patient response data
           const user: User = {
             id: this.users.length + 1,
-            backendId: 1, // Temporary ID
+            backendId: patientData.id, // Use patient UUID from backend
             usuario: patientData.documentNumber,
             email: patientData.documentNumber, // Use document as email for patients
             password: '', // No password for patients

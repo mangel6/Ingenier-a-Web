@@ -192,7 +192,7 @@ class BackendIntegration {
 
     try {
       console.log("Making real API call to fetch documents for patient:", backendId);
-      const response = await fetch(`${this.baseURL}/v1/clinical-documents/patient/${backendId}`, {
+      const response = await fetch(`${this.baseURL}/v1/clinical-documents/patient/uuid/${backendId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
