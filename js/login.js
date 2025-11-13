@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   // Handle login form submission
+<<<<<<< HEAD
   credentialsForm.addEventListener("submit", (e) => {
     e.preventDefault()
     announceToScreenReader("Credenciales verificadas. Procediendo a verificación de seguridad.")
@@ -48,6 +49,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize 2FA functionality
   initialize2FA()
+=======
+  credentialsForm.addEventListener("submit", async (e) => {
+    e.preventDefault()
+
+    const usuario = document.getElementById("username").value.trim().toLowerCase()
+    const password = document.getElementById("password").value
+    const tipoUsuario = userTypeSelect.value
+
+    console.log("[v0] Intentando login con:", { usuario, tipoUsuario, passwordLength: password.length })
+
+    // Validar campos vacíos
+    if (!usuario || !password || !tipoUsuario) {
+      showLoginError("Por favor completa todos los campos")
+      return
+    }
+
+    let result
+    // Always try to use the updated auth system first (which handles JWT)
+    console.log("[LOGIN] Using updated auth system with JWT support")
+    result = await window.authSystem.validateUser(usuario, password, tipoUsuario)
+
+    console.log("[v0] Resultado de login:", result)
+
+    if (result.success) {
+      console.log("[v0] Login exitoso, redirigiendo al dashboard")
+      announceToScreenReader("Login exitoso. Redirigiendo al panel de control.")
+      const userType = userTypeSelect.value
+      switch (userType) {
+        case "paciente":
+          window.location.href = "dashboard-paciente.html"
+          break
+        case "eps":
+          window.location.href = "dashboard-eps.html"
+          break
+        default:
+          window.location.href = "dashboard-paciente.html"
+      }
+    } else {
+      console.log("[v0] Login fallido:", result.message)
+      showLoginError(result.message)
+    }
+  })
+
+>>>>>>> fe43cde089c49753e79419f4bf25c3b4b8e9a71e
 
   function announceToScreenReader(message) {
     if (loginMessages) {
@@ -175,6 +220,21 @@ function showLoginForm() {
   document.getElementById("twoFactorForm").classList.add("hidden")
   document.getElementById("loginForm").classList.remove("hidden")
   announceToScreenReader("Regresando al formulario de inicio de sesión")
+<<<<<<< HEAD
+=======
+
+  const userType = document.getElementById("userType").value
+  switch (userType) {
+    case "paciente":
+      window.location.href = "dashboard-paciente.html"
+      break
+    case "eps":
+      window.location.href = "dashboard-eps.html"
+      break
+    default:
+      window.location.href = "dashboard-paciente.html"
+  }
+>>>>>>> fe43cde089c49753e79419f4bf25c3b4b8e9a71e
 }
 
 function announceToScreenReader(message) {
@@ -183,3 +243,38 @@ function announceToScreenReader(message) {
     loginMessages.textContent = message
   }
 }
+<<<<<<< HEAD
+=======
+
+function showLoginError(message) {
+  const errorDiv = document.getElementById("loginError") || createErrorDiv()
+  errorDiv.textContent = message
+  errorDiv.style.display = "block"
+
+  // Ocultar error después de 5 segundos
+  setTimeout(() => {
+    errorDiv.style.display = "none"
+  }, 5000)
+}
+
+function createErrorDiv() {
+  const errorDiv = document.createElement("div")
+  errorDiv.id = "loginError"
+  errorDiv.className = "error-message"
+  errorDiv.style.cssText = `
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    margin-top: 1rem;
+    display: none;
+    font-size: 0.875rem;
+  `
+
+  const form = document.getElementById("credentialsForm")
+  form.appendChild(errorDiv)
+
+  return errorDiv
+}
+>>>>>>> fe43cde089c49753e79419f4bf25c3b4b8e9a71e
