@@ -102,7 +102,7 @@ class BackendIntegration {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/MedCloud/api/v1/clinical-documents`, {
+      const response = await fetch(`${this.baseURL}/v1/clinical-documents`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -146,7 +146,7 @@ class BackendIntegration {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/MedCloud/api/v1/clinical-documents?patientId=${patientId}`, {
+      const response = await fetch(`${this.baseURL}/v1/clinical-documents?patientId=${patientId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -224,7 +224,7 @@ class BackendIntegration {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/MedCloud/api/v1/clinical-documents/${documentId}/content?patientId=${patientId}`, {
+      const response = await fetch(`${this.baseURL}/v1/clinical-documents/${documentId}/content?patientId=${patientId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

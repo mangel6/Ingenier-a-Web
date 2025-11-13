@@ -334,7 +334,7 @@ export default function PatientDashboard() {
                 </div>
               </div>
 
-              <Button variant="outline" className="w-full mt-4 bg-transparent" onClick={() => router.push('/dashboard/patient/history')}>
+              <Button variant="outline" className="w-full mt-4 bg-transparent" onClick={() => router.push('/history')}>
                 Ver Historial Completo
               </Button>
             </CardContent>

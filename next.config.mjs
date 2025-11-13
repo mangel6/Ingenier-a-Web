@@ -13,7 +13,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:8080/MedCloud/api/:path*',
+        destination: 'http://localhost:8080/MedCloud/api/v1/:path*',
       },
     ]
   },

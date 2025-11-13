@@ -235,6 +235,12 @@ class AuthSystem {
 
         const mappedRole = roleMapping[loginData.role] || loginData.role.toLowerCase().replace("role_", "")
 
+        // Fallback logic: if mapped tipoUsuario is 'user' and email is 'sanitas@correo.com', override to 'eps'
+        let finalTipoUsuario = mappedRole
+        if (mappedRole === 'user' && loginData.email === 'sanitas@correo.com') {
+          finalTipoUsuario = 'eps'
+        }
+
         // Create user from login response data
         const user: User = {
           id: this.users.length + 1,
@@ -242,7 +248,7 @@ class AuthSystem {
           usuario: loginData.email,
           email: loginData.email,
           password: password, // Store for offline access
-          tipoUsuario: mappedRole,
+          tipoUsuario: finalTipoUsuario,
           nombre: loginData.email.split('@')[0] || 'Usuario',
           nombreCompleto: loginData.email.split('@')[0] || 'Usuario',
         }
