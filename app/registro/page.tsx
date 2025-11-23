@@ -7,27 +7,17 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, User, UserCheck, FileText, Award, Stethoscope, CheckCircle, AlertCircle } from "lucide-react"
-
-type UserRole = "doctor" | "paciente" | "admin" | ""
+import { ArrowLeft, User, UserCheck, FileText, CheckCircle, AlertCircle } from "lucide-react"
 
 interface FormData {
   username: string
   email: string
   password: string
   confirmPassword: string
-  role: UserRole
-  // Common required fields for all users
-  fullName: string
-  documentType: string
-  documentNumber: string
-  birthDate: string
-  // Campos específicos para doctor
-  licencia?: string
-  especialidad?: string
+  epsName: string
+  nit: string
 }
 
 interface ApiResponse {
@@ -41,11 +31,8 @@ export default function RegistroPage() {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "",
-    fullName: "",
-    documentType: "",
-    documentNumber: "",
-    birthDate: "",
+    epsName: "",
+    nit: "",
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -59,10 +46,8 @@ export default function RegistroPage() {
       email: data.email.trim().toLowerCase(),
       password: data.password,
       confirmPassword: data.confirmPassword,
-      fullName: data.fullName.trim(),
-      documentNumber: data.documentNumber.trim(),
-      licencia: data.licencia?.trim(),
-      especialidad: data.especialidad?.trim(),
+      epsName: data.epsName.trim(),
+      nit: data.nit.trim(),
     }
   }
 
@@ -102,32 +87,12 @@ export default function RegistroPage() {
       newErrors.confirmPassword = "Las contraseñas no coinciden"
     }
 
-    if (!formData.role) {
-      newErrors.role = "Debes seleccionar un rol"
+    if (!formData.epsName.trim()) {
+      newErrors.epsName = "El nombre de la EPS es requerido"
     }
 
-    // Validaciones comunes para todos los roles
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "El nombre completo es requerido"
-    }
-    if (!formData.documentType) {
-      newErrors.documentType = "El tipo de documento es requerido"
-    }
-    if (!formData.documentNumber.trim()) {
-      newErrors.documentNumber = "El número de documento es requerido"
-    }
-    if (!formData.birthDate) {
-      newErrors.birthDate = "La fecha de nacimiento es requerida"
-    }
-
-    // Validaciones específicas por rol
-    if (formData.role === "doctor") {
-      if (!formData.licencia?.trim()) {
-        newErrors.licencia = "La licencia médica es requerida"
-      }
-      if (!formData.especialidad?.trim()) {
-        newErrors.especialidad = "La especialidad es requerida"
-      }
+    if (!formData.nit.trim()) {
+      newErrors.nit = "El NIT es requerido"
     }
 
     setErrors(newErrors)
@@ -137,37 +102,39 @@ export default function RegistroPage() {
   const submitToBackend = async (cleanedData: FormData): Promise<ApiResponse> => {
     console.log("[REGISTRO] submitToBackend called with:", cleanedData)
     try {
-      // Import auth system dynamically to avoid SSR issues
-      console.log("[REGISTRO] Importing auth system...")
-      const { authSystem } = await import("@/lib/auth")
-      console.log("[REGISTRO] Auth system imported successfully")
-
-      const userData = {
-        usuario: cleanedData.username,
+      const payload = {
+        username: cleanedData.username,
         email: cleanedData.email,
         password: cleanedData.password,
-        tipoUsuario: cleanedData.role,
-        nombreCompleto: cleanedData.fullName,
-        tipoDocumento: cleanedData.documentType,
-        numeroDocumento: cleanedData.documentNumber,
-        fechaNacimiento: cleanedData.birthDate,
-        ...(cleanedData.role === "doctor" && {
-          licenciaMedica: cleanedData.licencia,
-          especialidad: cleanedData.especialidad,
-        }),
+        epsName: cleanedData.epsName,
+        nit: cleanedData.nit,
       }
-      console.log("[REGISTRO] Complete JSON payload:", JSON.stringify(userData, null, 2))
-      console.log("[REGISTRO] Calling authSystem.registerUser with:", userData)
+      console.log("[REGISTRO] Complete JSON payload:", JSON.stringify(payload, null, 2))
 
-      const result = await authSystem.registerUser(userData)
-      console.log("[REGISTRO] authSystem.registerUser result:", result)
+      const response = await fetch("http://localhost:8080/MedCloud/api/v1/eps/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
 
-      return {
-        status: result.success ? "success" : "error",
-        message: result.message || "Error desconocido",
+      const data = await response.json()
+      console.log("[REGISTRO] API response:", data)
+
+      if (response.ok) {
+        return {
+          status: "success",
+          message: "EPS registrada exitosamente",
+        }
+      } else {
+        return {
+          status: "error",
+          message: data.message || data.error || "Error al registrar EPS",
+        }
       }
     } catch (error) {
-      console.error("Error al registrar usuario:", error)
+      console.error("Error al registrar EPS:", error)
       return {
         status: "error",
         message: "Error inesperado. Por favor, intenta nuevamente.",
@@ -201,11 +168,8 @@ export default function RegistroPage() {
           email: "",
           password: "",
           confirmPassword: "",
-          role: "",
-          fullName: "",
-          documentType: "",
-          documentNumber: "",
-          birthDate: "",
+          epsName: "",
+          nit: "",
         })
         setApiMessage({ type: "success", text: result.message })
       } else {
@@ -238,8 +202,8 @@ export default function RegistroPage() {
             <div className="mx-auto mb-4 w-12 h-12 bg-primary rounded-full flex items-center justify-center">
               <User className="w-6 h-6 text-primary-foreground" />
             </div>
-            <CardTitle className="text-2xl font-bold">Crear Nueva Cuenta</CardTitle>
-            <CardDescription>Completa el formulario para registrarte en el sistema médico</CardDescription>
+            <CardTitle className="text-2xl font-bold">Registrar EPS</CardTitle>
+            <CardDescription>Completa el formulario para registrar una nueva EPS en el sistema médico</CardDescription>
           </CardHeader>
 
           <CardContent>
@@ -319,176 +283,51 @@ export default function RegistroPage() {
                     </div>
                   </div>
 
+                </div>
+              </div>
+
+              {/* Información de la EPS */}
+              <Separator />
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <FileText className="w-4 h-4" />
+                  Información de la EPS
+                </div>
+
+                <div className="grid gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="role">Tipo de Usuario</Label>
-                    <Select value={formData.role} onValueChange={(value: UserRole) => handleInputChange("role", value)}>
-                      <SelectTrigger className={errors.role ? "border-destructive" : ""}>
-                        <SelectValue placeholder="Selecciona tu rol en el sistema" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="doctor">
-                          <div className="flex items-center gap-2">
-                            <Stethoscope className="w-4 h-4" />
-                            Médico
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="paciente">
-                          <div className="flex items-center gap-2">
-                            <User className="w-4 h-4" />
-                            Paciente
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="admin">
-                          <div className="flex items-center gap-2">
-                            <Award className="w-4 h-4" />
-                            Administrador
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {errors.role && <p className="text-sm text-destructive">{errors.role}</p>}
+                    <Label htmlFor="epsName">Nombre de la EPS</Label>
+                    <Input
+                      id="epsName"
+                      type="text"
+                      placeholder="Ej: EPS Salud Total"
+                      value={formData.epsName}
+                      onChange={(e) => handleInputChange("epsName", e.target.value)}
+                      className={errors.epsName ? "border-destructive" : ""}
+                    />
+                    {errors.epsName && <p className="text-sm text-destructive">{errors.epsName}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="nit">NIT</Label>
+                    <Input
+                      id="nit"
+                      type="text"
+                      placeholder="Número de Identificación Tributaria"
+                      value={formData.nit}
+                      onChange={(e) => handleInputChange("nit", e.target.value)}
+                      className={errors.nit ? "border-destructive" : ""}
+                    />
+                    {errors.nit && <p className="text-sm text-destructive">{errors.nit}</p>}
                   </div>
                 </div>
               </div>
 
-              {/* Campos comunes para todos los roles */}
-              {formData.role && (
-                <>
-                  <Separator />
-
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                      <FileText className="w-4 h-4" />
-                      Información Personal
-                    </div>
-
-                    <div className="grid gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="fullName">Nombre Completo</Label>
-                        <Input
-                          id="fullName"
-                          type="text"
-                          placeholder="Nombres y apellidos completos"
-                          value={formData.fullName}
-                          onChange={(e) => handleInputChange("fullName", e.target.value)}
-                          className={errors.fullName ? "border-destructive" : ""}
-                        />
-                        {errors.fullName && <p className="text-sm text-destructive">{errors.fullName}</p>}
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="documentType">Tipo de Documento</Label>
-                          <Select
-                            value={formData.documentType}
-                            onValueChange={(value) => handleInputChange("documentType", value)}
-                          >
-                            <SelectTrigger className={errors.documentType ? "border-destructive" : ""}>
-                              <SelectValue placeholder="Selecciona el tipo" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="cc">Cédula de Ciudadanía</SelectItem>
-                              <SelectItem value="ti">Tarjeta de Identidad</SelectItem>
-                              <SelectItem value="ce">Cédula de Extranjería</SelectItem>
-                              <SelectItem value="pasaporte">Pasaporte</SelectItem>
-                              <SelectItem value="rc">Registro Civil</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          {errors.documentType && <p className="text-sm text-destructive">{errors.documentType}</p>}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="documentNumber">Número de Documento</Label>
-                          <Input
-                            id="documentNumber"
-                            type="text"
-                            placeholder="Número sin puntos ni espacios"
-                            value={formData.documentNumber}
-                            onChange={(e) => handleInputChange("documentNumber", e.target.value)}
-                            className={errors.documentNumber ? "border-destructive" : ""}
-                          />
-                          {errors.documentNumber && (
-                            <p className="text-sm text-destructive">{errors.documentNumber}</p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="birthDate">Fecha de Nacimiento</Label>
-                        <Input
-                          id="birthDate"
-                          type="date"
-                          value={formData.birthDate}
-                          onChange={(e) => handleInputChange("birthDate", e.target.value)}
-                          className={errors.birthDate ? "border-destructive" : ""}
-                        />
-                        {errors.birthDate && (
-                          <p className="text-sm text-destructive">{errors.birthDate}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Campos específicos por rol */}
-                  {formData.role === "doctor" && (
-                    <>
-                      <Separator />
-
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                          <Award className="w-4 h-4" />
-                          Información Profesional
-                        </div>
-
-                        <div className="grid gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="licencia">Número de Licencia Médica</Label>
-                            <Input
-                              id="licencia"
-                              type="text"
-                              placeholder="Ej: 12345678"
-                              value={formData.licencia || ""}
-                              onChange={(e) => handleInputChange("licencia", e.target.value)}
-                              className={errors.licencia ? "border-destructive" : ""}
-                            />
-                            {errors.licencia && <p className="text-sm text-destructive">{errors.licencia}</p>}
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="especialidad">Especialidad Médica</Label>
-                            <Select
-                              value={formData.especialidad || ""}
-                              onValueChange={(value) => handleInputChange("especialidad", value)}
-                            >
-                              <SelectTrigger className={errors.especialidad ? "border-destructive" : ""}>
-                                <SelectValue placeholder="Selecciona tu especialidad" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="medicina-general">Medicina General</SelectItem>
-                                <SelectItem value="cardiologia">Cardiología</SelectItem>
-                                <SelectItem value="dermatologia">Dermatología</SelectItem>
-                                <SelectItem value="neurologia">Neurología</SelectItem>
-                                <SelectItem value="pediatria">Pediatría</SelectItem>
-                                <SelectItem value="ginecologia">Ginecología</SelectItem>
-                                <SelectItem value="traumatologia">Traumatología</SelectItem>
-                                <SelectItem value="psiquiatria">Psiquiatría</SelectItem>
-                                <SelectItem value="oftalmologia">Oftalmología</SelectItem>
-                                <SelectItem value="otorrinolaringologia">Otorrinolaringología</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            {errors.especialidad && <p className="text-sm text-destructive">{errors.especialidad}</p>}
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-
               {/* Botones de acción */}
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button type="submit" className="flex-1" disabled={isSubmitting}>
-                  {isSubmitting ? "Registrando..." : "Crear Cuenta"}
+                  {isSubmitting ? "Registrando..." : "Registrar EPS"}
                 </Button>
                 <Button type="button" variant="outline" className="flex-1 bg-transparent" asChild>
                   <Link href="/">Cancelar</Link>
