@@ -14,30 +14,23 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar, Users, FileText, Clock, Upload, Activity, Bell, Plus, Search, Filter, LogOut, Building, ArrowLeft } from "lucide-react"
 import { authSystem } from "@/lib/auth"
 
-// Type declaration for window.backendIntegration
-declare global {
-  interface Window {
-    backendIntegration: {
-      uploadClinicalDocument: (payload: any) => Promise<{ success: boolean; message: string }>
-    }
-  }
-}
+// Note: backendIntegration type is declared in upload/page.tsx
 
 // Validation schema
 const uploadSchema = z.object({
+  patientDocumentType: z.string().min(1, "El tipo de documento es requerido"),
   patientDocumentNumber: z.string().min(1, "La cédula del paciente es requerida"),
-  patientFullName: z.string().min(1, "El nombre completo del paciente es requerido").max(120, "El nombre no puede exceder los 120 caracteres"),
   patientBirthDate: z.string().min(1, "La fecha de nacimiento es requerida"),
+  patientFullName: z.string().min(1, "El nombre completo del paciente es requerido"),
   patientTreatment: z.string().max(1000, "El tratamiento no puede exceder los 1000 caracteres").optional(),
   patientDiagnosisInProgress: z.boolean({
     required_error: "El estado del diagnóstico es requerido",
   }),
-  doctorName: z.string().min(1, "El nombre del médico es requerido").max(120, "El nombre del médico no puede exceder los 120 caracteres"),
   doctorDocumentNumber: z.string().min(1, "La cédula del médico es requerida"),
-  doctorSpecialty: z.string().max(60, "La especialidad no puede exceder los 60 caracteres").optional(),
   kind: z.enum(["PDF", "IMAGE", "LAB_REPORT", "SCAN", "OTHER"], {
     required_error: "Por favor seleccione un tipo de archivo",
   }),
+  captchaSolution: z.string().min(1, "La solución del captcha es requerida"),
 })
 
 type UploadFormData = z.infer<typeof uploadSchema>
@@ -52,19 +45,26 @@ export default function EpsDashboard() {
   const [currentEpsId, setCurrentEpsId] = useState<string>("")
   const [epsInfo, setEpsInfo] = useState<any>(null)
   const [isUploading, setIsUploading] = useState<boolean>(false)
+  const [captchaImage, setCaptchaImage] = useState<string>("")
+  const [captchaSessionId, setCaptchaSessionId] = useState<string>("")
+  const [isLoadingCaptcha, setIsLoadingCaptcha] = useState<boolean>(false)
+  const [showValidationModal, setShowValidationModal] = useState<boolean>(false)
+  const [isValidatingPatient, setIsValidatingPatient] = useState<boolean>(false)
+  const [patientValidationResult, setPatientValidationResult] = useState<any>(null)
+  const [pendingFormData, setPendingFormData] = useState<UploadFormData | null>(null)
 
   const form = useForm<UploadFormData>({
     resolver: zodResolver(uploadSchema),
     defaultValues: {
+      patientDocumentType: "",
       patientDocumentNumber: "",
-      patientFullName: "",
       patientBirthDate: "",
+      patientFullName: "",
       patientTreatment: "",
       patientDiagnosisInProgress: false,
-      doctorName: "",
       doctorDocumentNumber: "",
-      doctorSpecialty: "",
       kind: undefined,
+      captchaSolution: "",
     },
   })
 
@@ -99,9 +99,64 @@ export default function EpsDashboard() {
         if (currentEps?.id) {
           setCurrentEpsId(currentEps.id)
         }
+      } else {
+        console.error('Failed to fetch EPS info:', response.status, await response.text())
+        // Set fallback info
+        setEpsInfo({ fullName: 'EPS Salud Total', id: null })
       }
     } catch (error) {
       console.error('Error fetching EPS info:', error)
+      // Set fallback info on error
+      setEpsInfo({ fullName: 'EPS Salud Total', id: null })
+    }
+  }
+
+  const initiateCaptcha = async (tipoDocumento: string, numeroDocumento: string) => {
+    if (!tipoDocumento || !numeroDocumento) {
+      console.log('Skipping captcha initiation - missing parameters')
+      return
+    }
+
+    console.log('Making captcha API call with:', tipoDocumento, numeroDocumento)
+    setIsLoadingCaptcha(true)
+    try {
+      const response = await fetch(`http://localhost:8080/MedCloud/api/v1/validation/eps/initiate?tipoDocumento=${tipoDocumento}&numeroDocumento=${numeroDocumento}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      console.log('Captcha API response status:', response.status)
+      const responseText = await response.text()
+      console.log('Captcha API response:', responseText)
+
+      if (response.ok) {
+        const captchaData = JSON.parse(responseText)
+        console.log('Parsed captcha data:', captchaData)
+        setCaptchaImage(captchaData.captchaImage)
+        setCaptchaSessionId(captchaData.sessionId)
+      } else {
+        console.error('Error initiating captcha - status:', response.status, 'response:', responseText)
+        alert('Error al cargar el captcha. Por favor intente nuevamente.')
+      }
+    } catch (error) {
+      console.error('Error initiating captcha:', error)
+      alert('Error de conexión al cargar el captcha.')
+    } finally {
+      setIsLoadingCaptcha(false)
+    }
+  }
+
+  // Function to check and initiate captcha
+  const checkAndInitiateCaptcha = () => {
+    const formValues = form.getValues()
+    console.log('Checking captcha initiation:', formValues.patientDocumentType, formValues.patientDocumentNumber)
+    if (formValues.patientDocumentType && formValues.patientDocumentNumber && formValues.patientDocumentNumber.trim() !== '') {
+      console.log('Initiating captcha with:', formValues.patientDocumentType, formValues.patientDocumentNumber)
+      initiateCaptcha(formValues.patientDocumentType, formValues.patientDocumentNumber)
+    } else {
+      console.log('Not initiating captcha - missing data')
     }
   }
 
@@ -124,66 +179,133 @@ export default function EpsDashboard() {
     }
   }
 
-  const onSubmit = async (data: UploadFormData) => {
-    console.log("[DEBUG] onSubmit called with data:", data)
-    if (!file) {
-      console.log("[DEBUG] No file selected")
-      alert("Por favor seleccione un archivo para subir")
-      return
-    }
+  const validatePatientData = async (data: UploadFormData) => {
+    console.log("[VALIDATION] Starting patient data validation")
+    setIsValidatingPatient(true)
+    setPatientValidationResult(null)
 
-    console.log("[DEBUG] File selected:", file.name)
+    try {
+      // Map document type to abbreviated form for validation API
+      const mapTipoDocumento = (tipo: string) => {
+        switch (tipo) {
+          case "Cédula de Ciudadanía":
+          case "Cedula de Ciudadanía":
+            return "CC"
+          case "Tarjeta de Identidad":
+            return "TI"
+          case "Cédula de Extranjería":
+            return "CE"
+          default:
+            return tipo
+        }
+      }
+
+      const validationData = {
+        sessionId: captchaSessionId,
+        tipoDocumento: mapTipoDocumento(data.patientDocumentType),
+        numeroDocumento: data.patientDocumentNumber,
+        captchaSolution: data.captchaSolution,
+      }
+
+      console.log("[VALIDATION] Validation data:", validationData)
+      const result = await window.backendIntegration.validatePatientData(validationData)
+      console.log("[VALIDATION] Validation result:", result)
+
+      if (result.success && result.isValid) {
+        setPatientValidationResult(result)
+      } else {
+        alert(`Error en validación: ${result.message}`)
+        setShowValidationModal(false)
+      }
+    } catch (error) {
+      console.error("[VALIDATION] Error validating patient data:", error)
+      alert("Error al validar los datos del paciente. Por favor intente nuevamente.")
+      setShowValidationModal(false)
+    } finally {
+      setIsValidatingPatient(false)
+    }
+  }
+
+  const confirmAndUpload = async () => {
+    if (!pendingFormData) return
+
+    console.log("[UPLOAD] Starting confirmed upload")
     setIsUploading(true)
-    console.log("[DEBUG] Set isUploading to true")
 
     const payload = {
-      patientDocumentNumber: data.patientDocumentNumber,
-      patientFullName: data.patientFullName,
-      patientBirthDate: data.patientBirthDate,
-      patientTreatment: data.patientTreatment || "",
-      patientDiagnosisInProgress: data.patientDiagnosisInProgress,
+      patientDocumentType: pendingFormData.patientDocumentType,
+      patientDocumentNumber: pendingFormData.patientDocumentNumber,
+      patientBirthDate: pendingFormData.patientBirthDate,
+      patientFullName: pendingFormData.patientFullName,
+      patientTreatment: pendingFormData.patientTreatment || "",
+      patientDiagnosisInProgress: pendingFormData.patientDiagnosisInProgress,
       uploadedByEpsId: currentEpsId,
-      doctorName: data.doctorName,
-      doctorDocumentNumber: data.doctorDocumentNumber,
-      doctorSpecialty: data.doctorSpecialty || "",
-      kind: data.kind,
-      filename: file.name,
+      doctorDocumentNumber: pendingFormData.doctorDocumentNumber,
+      kind: pendingFormData.kind,
+      filename: file!.name,
       fileContentBase64,
       mimeType,
       sizeBytes,
+      captchaSessionId,
+      captchaSolution: pendingFormData.captchaSolution,
     }
-    console.log("[DEBUG] Payload constructed:", payload)
+    console.log("[UPLOAD] Payload constructed:", payload)
 
     try {
-      console.log("[DEBUG] Checking if window.backendIntegration exists:", !!window.backendIntegration)
-      // Access the backend integration from window object
       const result = await window.backendIntegration.uploadClinicalDocument(payload)
-      console.log("[DEBUG] Backend integration result:", result)
+      console.log("[UPLOAD] Upload result:", result)
 
       if (result.success) {
-        console.log("[DEBUG] Upload successful, resetting form")
         alert("¡Archivo subido exitosamente!")
-        // Reset form
+        // Reset form and states
         form.reset()
         setFile(null)
         setFileContentBase64("")
         setMimeType("")
         setSizeBytes(0)
-        // Reset file input
+        setCaptchaImage("")
+        setCaptchaSessionId("")
+        setShowValidationModal(false)
+        setPatientValidationResult(null)
+        setPendingFormData(null)
         if (fileInputRef.current) {
           fileInputRef.current.value = ""
         }
       } else {
-        console.log("[DEBUG] Upload failed with message:", result.message)
         alert(`Error al subir archivo: ${result.message}`)
       }
     } catch (error) {
-      console.error("[DEBUG] Error uploading document:", error)
+      console.error("[UPLOAD] Error uploading document:", error)
       alert("Error inesperado al subir el archivo. Por favor intente nuevamente.")
     } finally {
-      console.log("[DEBUG] Setting isUploading to false")
       setIsUploading(false)
     }
+  }
+
+  const onSubmit = async (data: UploadFormData) => {
+    console.log("[SUBMIT] onSubmit called with data:", data)
+    if (!file) {
+      alert("Por favor seleccione un archivo para subir")
+      return
+    }
+
+    if (!captchaImage) {
+      alert("Por favor complete el captcha primero")
+      return
+    }
+
+    // Store form data and show validation modal
+    setPendingFormData(data)
+    setShowValidationModal(true)
+
+    // Start validation
+    await validatePatientData(data)
+  }
+
+  const closeValidationModal = () => {
+    setShowValidationModal(false)
+    setPatientValidationResult(null)
+    setPendingFormData(null)
   }
 
   const handleLogout = () => {
@@ -198,7 +320,7 @@ export default function EpsDashboard() {
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-3xl font-bold">Bienvenido al Panel EPS</h1>
-            <p className="text-muted-foreground">{epsInfo?.fullName || "EPS Salud Total"}</p>
+            <p className="text-muted-foreground">{epsInfo?.fullName || epsInfo?.username || "EPS Salud Total"}</p>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" onClick={handleLogout}>
@@ -252,7 +374,7 @@ export default function EpsDashboard() {
               <div>
                 <label className="text-sm font-medium">Nombre de la EPS</label>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {epsInfo?.fullName || "Cargando..."}
+                  {epsInfo?.fullName || epsInfo?.username || "EPS Salud Total"}
                 </p>
               </div>
               <div>
@@ -279,6 +401,37 @@ export default function EpsDashboard() {
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {/* Patient Document Type */}
+                <FormField
+                  control={form.control}
+                  name="patientDocumentType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de Documento del Paciente</FormLabel>
+                      <Select
+                        onValueChange={(value) => {
+                          field.onChange(value)
+                          // Trigger captcha check after a short delay
+                          setTimeout(checkAndInitiateCaptcha, 100)
+                        }}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccione el tipo de documento" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="CC">Cédula de Ciudadanía</SelectItem>
+                          <SelectItem value="TI">Tarjeta de Identidad</SelectItem>
+                          <SelectItem value="CE">Cédula de Extranjería</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 {/* Patient Document Number */}
                 <FormField
                   control={form.control}
@@ -289,6 +442,29 @@ export default function EpsDashboard() {
                       <FormControl>
                         <Input
                           placeholder="Ingrese la cédula del paciente"
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e)
+                            // Trigger captcha check after a short delay
+                            setTimeout(checkAndInitiateCaptcha, 100)
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Patient Birth Date */}
+                <FormField
+                  control={form.control}
+                  name="patientBirthDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fecha de Nacimiento del Paciente</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
                           {...field}
                         />
                       </FormControl>
@@ -307,24 +483,6 @@ export default function EpsDashboard() {
                       <FormControl>
                         <Input
                           placeholder="Ingrese el nombre completo del paciente"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Patient Birth Date */}
-                <FormField
-                  control={form.control}
-                  name="patientBirthDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Fecha de Nacimiento del Paciente</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="date"
                           {...field}
                         />
                       </FormControl>
@@ -374,24 +532,6 @@ export default function EpsDashboard() {
                   )}
                 />
 
-                {/* Doctor Name */}
-                <FormField
-                  control={form.control}
-                  name="doctorName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nombre del Médico</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Ingrese el nombre del médico"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 {/* Doctor Document Number */}
                 <FormField
                   control={form.control}
@@ -410,23 +550,6 @@ export default function EpsDashboard() {
                   )}
                 />
 
-                {/* Doctor Specialty */}
-                <FormField
-                  control={form.control}
-                  name="doctorSpecialty"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Especialidad del Médico (Opcional)</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Ingrese la especialidad del médico"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 {/* File Type */}
                 <FormField
@@ -480,6 +603,35 @@ export default function EpsDashboard() {
                   )}
                 </div>
 
+                {/* Captcha Section */}
+                {captchaImage && (
+                  <div className="space-y-4 p-4 border rounded-lg">
+                    <FormLabel className="text-sm font-medium">Verificación de Captcha</FormLabel>
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={`data:image/png;base64,${captchaImage}`}
+                        alt="Captcha"
+                        className="border rounded"
+                      />
+                      <FormField
+                        control={form.control}
+                        name="captchaSolution"
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormControl>
+                              <Input
+                                placeholder="Ingrese el texto del captcha"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* Auto-populated fields (read-only display) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
                   <div>
@@ -509,7 +661,7 @@ export default function EpsDashboard() {
                 </div>
 
                 {/* Submit Button */}
-                <Button type="submit" className="w-full" disabled={!file || isUploading}>
+                <Button type="submit" className="w-full" disabled={!file || !captchaImage || isUploading}>
                   <Upload className="w-4 h-4 mr-2" />
                   {isUploading ? "Subiendo..." : "Subir Documento"}
                 </Button>
@@ -517,6 +669,85 @@ export default function EpsDashboard() {
             </Form>
           </CardContent>
         </Card>
+
+        {/* Patient Validation Modal */}
+        {showValidationModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <Card className="w-full max-w-md mx-4">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-blue-600" />
+                  Validando en ADRES
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {isValidatingPatient ? (
+                  <div className="text-center py-8">
+                    <Activity className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
+                    <p className="text-sm text-muted-foreground">
+                      Consultando la base de datos ADRES para verificar la información del paciente...
+                    </p>
+                  </div>
+                ) : patientValidationResult ? (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-green-800">Validación Exitosa</span>
+                      </div>
+
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Número de Documento:</span>
+                          <span className="font-mono font-medium">{patientValidationResult.numeroDocumento}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Estado en ADRES:</span>
+                          <Badge variant={patientValidationResult.status === 'ACTIVO' ? 'default' : 'destructive'}>
+                            {patientValidationResult.status}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">EPS Afiliada:</span>
+                          <span className="font-medium">{patientValidationResult.epsName}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <Button
+                        variant="outline"
+                        onClick={closeValidationModal}
+                        className="flex-1"
+                        disabled={isUploading}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        onClick={confirmAndUpload}
+                        disabled={isUploading}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700"
+                      >
+                        {isUploading ? "Subiendo..." : "Confirmar y Subir"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-red-600">Error en la validación. Por favor intente nuevamente.</p>
+                    <Button
+                      variant="outline"
+                      onClick={closeValidationModal}
+                      className="mt-4"
+                    >
+                      Cerrar
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Recent Activity */}
         <Card>
