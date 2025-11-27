@@ -146,6 +146,7 @@ class BackendIntegration {
 
     try {
       const token = localStorage.getItem("jwtToken")
+      console.log("DEBUG: patientBirthDate from frontend:", documentData.patientBirthDate)
       // Map the frontend payload to backend expected format
       const backendPayload = {
         patientDocumentType: documentData.patientDocumentType,
@@ -166,6 +167,7 @@ class BackendIntegration {
         captchaSessionId: documentData.captchaSessionId,
         captchaSolution: documentData.captchaSolution,
       }
+      console.log("DEBUG: patientBirthDate in backendPayload:", backendPayload.patientBirthDate)
 
       const response = await fetch(`${this.baseURL}/v1/clinical-documents`, {
         method: "POST",

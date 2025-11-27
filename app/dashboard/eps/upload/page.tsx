@@ -9,6 +9,12 @@ declare global {
   interface Window {
     backendIntegration: {
       uploadClinicalDocument: (payload: any) => Promise<{ success: boolean; message: string }>
+      validatePatientData: (validationData: any) => Promise<{ success: boolean; isValid?: boolean; epsName?: string; numeroDocumento?: string; status?: string; message: string }>
+      registerUser: (userData: any) => Promise<{ success: boolean; message: string }>
+      loginUser: (usuario: string, password: string, tipoUsuario: string) => Promise<{ success: boolean; user?: any }>
+      fetchClinicalDocuments: (patientId: string) => Promise<{ success: boolean; documents?: any[] }>
+      fetchClinicalDocumentsForPatient: (backendId: string) => Promise<{ success: boolean; documents?: any[] }>
+      fetchClinicalDocumentContent: (documentId: string, patientId: string) => Promise<{ success: boolean; content?: string; mimeType?: string }>
     }
   }
 }
@@ -29,6 +35,8 @@ import { EpsValidationModal } from "@/components/EpsValidationModal"
 const uploadSchema = z.object({
   patientDocumentType: z.string().min(1, "El tipo de documento es requerido"),
   patientDocumentNumber: z.string().min(1, "El número de documento es requerido"),
+  patientBirthDate: z.string().min(1, "La fecha de nacimiento es requerida"),
+  patientFullName: z.string().min(1, "El nombre completo del paciente es requerido"),
   kind: z.enum(["PDF", "IMAGE", "DOCUMENT"], {
     required_error: "Por favor seleccione un tipo de archivo",
   }),
@@ -67,6 +75,8 @@ export default function EpsUploadPage() {
     defaultValues: {
       patientDocumentType: "",
       patientDocumentNumber: "",
+      patientBirthDate: "",
+      patientFullName: "",
       kind: undefined,
       captchaSolution: "",
     },
@@ -221,6 +231,8 @@ export default function EpsUploadPage() {
     const payload = {
       patientDocumentType: data.patientDocumentType,
       patientDocumentNumber: data.patientDocumentNumber,
+      patientBirthDate: data.patientBirthDate,
+      patientFullName: data.patientFullName,
       uploadedByEpsId: currentEpsId,
       kind: data.kind,
       filename: file!.name,
@@ -378,6 +390,42 @@ export default function EpsUploadPage() {
                             // Trigger captcha check after a short delay
                             setTimeout(checkAndInitiateCaptcha, 100)
                           }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Patient Birth Date */}
+                <FormField
+                  control={form.control}
+                  name="patientBirthDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fecha de Nacimiento del Paciente</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Patient Full Name */}
+                <FormField
+                  control={form.control}
+                  name="patientFullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nombre Completo del Paciente</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ingrese el nombre completo del paciente"
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />

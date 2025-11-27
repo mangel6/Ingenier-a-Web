@@ -14,20 +14,14 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar, Users, FileText, Clock, Upload, Activity, Bell, Plus, Search, Filter, LogOut, Building, ArrowLeft } from "lucide-react"
 import { authSystem } from "@/lib/auth"
 
-// Type declaration for window.backendIntegration
-declare global {
-  interface Window {
-    backendIntegration: {
-      uploadClinicalDocument: (payload: any) => Promise<{ success: boolean; message: string }>
-      validatePatientData: (validationData: any) => Promise<{ success: boolean; isValid?: boolean; epsName?: string; numeroDocumento?: string; status?: string; message: string }>
-    }
-  }
-}
+// Note: backendIntegration type is declared in upload/page.tsx
 
 // Validation schema
 const uploadSchema = z.object({
   patientDocumentType: z.string().min(1, "El tipo de documento es requerido"),
   patientDocumentNumber: z.string().min(1, "La cédula del paciente es requerida"),
+  patientBirthDate: z.string().min(1, "La fecha de nacimiento es requerida"),
+  patientFullName: z.string().min(1, "El nombre completo del paciente es requerido"),
   patientTreatment: z.string().max(1000, "El tratamiento no puede exceder los 1000 caracteres").optional(),
   patientDiagnosisInProgress: z.boolean({
     required_error: "El estado del diagnóstico es requerido",
@@ -64,6 +58,8 @@ export default function EpsDashboard() {
     defaultValues: {
       patientDocumentType: "",
       patientDocumentNumber: "",
+      patientBirthDate: "",
+      patientFullName: "",
       patientTreatment: "",
       patientDiagnosisInProgress: false,
       doctorDocumentNumber: "",
@@ -239,6 +235,8 @@ export default function EpsDashboard() {
     const payload = {
       patientDocumentType: pendingFormData.patientDocumentType,
       patientDocumentNumber: pendingFormData.patientDocumentNumber,
+      patientBirthDate: pendingFormData.patientBirthDate,
+      patientFullName: pendingFormData.patientFullName,
       patientTreatment: pendingFormData.patientTreatment || "",
       patientDiagnosisInProgress: pendingFormData.patientDiagnosisInProgress,
       uploadedByEpsId: currentEpsId,
@@ -457,6 +455,41 @@ export default function EpsDashboard() {
                   )}
                 />
 
+                {/* Patient Birth Date */}
+                <FormField
+                  control={form.control}
+                  name="patientBirthDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fecha de Nacimiento del Paciente</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Patient Full Name */}
+                <FormField
+                  control={form.control}
+                  name="patientFullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nombre Completo del Paciente</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ingrese el nombre completo del paciente"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 {/* Patient Treatment */}
                 <FormField
