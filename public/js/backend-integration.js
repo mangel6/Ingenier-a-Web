@@ -4,7 +4,7 @@ console.log("backend-integration.js loaded");
 class BackendIntegration {
   constructor() {
     console.log("BackendIntegration instance created");
-    this.baseURL = "/api" // CAMBIAR POR LA URL REAL
+    this.baseURL = "http://localhost:8080/MedCloud/api" // CAMBIAR POR LA URL REAL
 
     this.useRealBackend = true // Cambiar a true cuando el backend esté listo
   }
@@ -93,6 +93,49 @@ class BackendIntegration {
     }
   }
 
+  // Método para validar datos del paciente con ADRES
+  async validatePatientData(validationData) {
+    if (!this.useRealBackend) {
+      // Simular validación exitosa en modo local
+      console.log("Mock patient validation:", validationData)
+      return {
+        success: true,
+        isValid: true,
+        epsName: "EPS Mock S.A.S.",
+        numeroDocumento: validationData.numeroDocumento,
+        status: "ACTIVO",
+        message: "Validación exitosa (modo local)"
+      }
+    }
+
+    try {
+      const response = await fetch(`${this.baseURL}/v1/validation/eps/validate-patient?sessionId=${validationData.sessionId}&tipoDocumento=${validationData.tipoDocumento}&numeroDocumento=${validationData.numeroDocumento}&captchaSolution=${validationData.captchaSolution}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        return {
+          success: true,
+          isValid: result.isValid,
+          epsName: result.epsName,
+          numeroDocumento: result.numeroDocumento,
+          status: result.status,
+          message: result.message
+        }
+      } else {
+        return { success: false, message: result.message || "Error al validar datos del paciente" }
+      }
+    } catch (error) {
+      console.error("Error de conexión:", error)
+      return { success: false, message: "Error de conexión con el servidor" }
+    }
+  }
+
   // Método para subir documento clínico
   async uploadClinicalDocument(documentData) {
     if (!this.useRealBackend) {
@@ -103,13 +146,34 @@ class BackendIntegration {
 
     try {
       const token = localStorage.getItem("jwtToken")
+      // Map the frontend payload to backend expected format
+      const backendPayload = {
+        patientDocumentType: documentData.patientDocumentType,
+        patientDocumentNumber: documentData.patientDocumentNumber,
+        patientFullName: documentData.patientFullName || "Paciente", // Required field
+        patientBirthDate: documentData.patientBirthDate || null,
+        patientTreatment: documentData.patientTreatment || "Tratamiento pendiente",
+        patientDiagnosisInProgress: documentData.patientDiagnosisInProgress !== undefined ? documentData.patientDiagnosisInProgress : true, // Required boolean
+        uploadedByEpsId: documentData.uploadedByEpsId || documentData.uploadedByUserId,
+        doctorName: documentData.doctorName || "Médico General",
+        doctorDocumentNumber: documentData.doctorDocumentNumber || "123456789", // Required field
+        doctorSpecialty: documentData.doctorSpecialty || "Medicina General",
+        kind: documentData.kind,
+        filename: documentData.filename,
+        fileContentBase64: documentData.fileContentBase64,
+        mimeType: documentData.mimeType,
+        sizeBytes: documentData.sizeBytes,
+        captchaSessionId: documentData.captchaSessionId,
+        captchaSolution: documentData.captchaSolution,
+      }
+
       const response = await fetch(`${this.baseURL}/v1/clinical-documents`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": token ? `Bearer ${token}` : "",
         },
-        body: JSON.stringify(documentData),
+        body: JSON.stringify(backendPayload),
       })
 
       const result = await response.json()
